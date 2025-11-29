@@ -3,6 +3,8 @@ export default {
 
   LOGIN: '/login',
   SIGN_UP: '/sign-up',
+  REGISTER: '/register',
+  ONBOARDING: '/onboarding',
 
   API: {
     AUTH_LOGIN: 'api/login',

@@ -1,43 +1,32 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom';
-import { api } from '@/services/axios-wrapper';
-import paths from '@/constants/paths';
+import { motion } from 'motion/react'
+import { useNavigate } from 'react-router-dom'
 
-interface LoginPageProps {
-  onLogin: () => void;
+interface RegisterPageProps {
+  onRegister?: () => void;
+  onLoginClick: () => void;
 }
-export const Login = ({ onLogin }: LoginPageProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+export const Register = ({ onRegister, onLoginClick }: RegisterPageProps) => {
+  const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
-    try {
-      const response = await api.post<{ idToken: string }>('auth', '/login', {
-        email,
-        password,
-      });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    navigate('/onboarding', {
+      state: {
+        registrationData: {
+          name,
+          email,
+          password,
+        },
+      },
+    })
+  }
 
-      // Store tokens
-      localStorage.setItem('idToken', response.idToken);
-
-      if (onLogin) {
-        onLogin();
-      } else {
-        navigate(paths.DASHBOARD);
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
-      // You might want to show a toast error here
-    } finally {
-      setIsLoading(false);
-    }
-  };
   return (
     <div className="min-h-screen bg-morplo-gray-130 flex items-center justify-center p-6">
       <motion.div 
@@ -48,15 +37,33 @@ export const Login = ({ onLogin }: LoginPageProps) => {
       >
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-morplo-gray-900 mb-2">
-            Welcome to NewsHub
+            Create an account
           </h1>
           <p className="text-morplo-gray-600">
-            Stay informed with personalized news
+            Join NewsHub to get personalized news
           </p>
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-morplo-gray-900 mb-2"
+              >
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full px-4 py-3 bg-morplo-gray-130 rounded-lg text-morplo-gray-900 placeholder-morplo-gray-50 focus:outline-none focus:ring-2 focus:ring-morplo-blue-100 transition-shadow"
+                required
+              />
+            </div>
+
             <div>
               <label
                 htmlFor="email"
@@ -95,25 +102,25 @@ export const Login = ({ onLogin }: LoginPageProps) => {
 
             <motion.button
               type="submit"
-              disabled={isLoading}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full px-4 py-3 bg-morplo-blue-100 text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-morplo-blue-100 text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors"
             >
-              {isLoading ? 'Signing in...' : 'Continue'}
+              Continue to Onboarding
             </motion.button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-morplo-gray-600">
-              Don't have an account?{' '}
-              <button onClick={() => navigate(paths.REGISTER)} className="text-morplo-blue-100 font-medium hover:underline">
-                Sign up
-              </button>
+              Already have an account?{' '}
+              <button 
+                onClick={onLoginClick}
+                className="text-morplo-blue-100 hover:underline font-medium"
+            > Sign in </button>
             </p>
           </div>
         </div>
       </motion.div>
     </div>
   );
-};
+}

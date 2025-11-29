@@ -1,12 +1,14 @@
 import { useState } from 'react';
-
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
+import { api } from '@/services/axios-wrapper';
+import paths from '@/constants/paths';
 
 import { ProgressBar } from '../components/ui/progress-bar';
 import { Category } from '../types/index';
 
 interface OnboardingProps {
-  onComplete: (userType: string, interests: Category[]) => void;
+  onComplete?: (userType: string, interests: Category[]) => void;
 }
 type UserType = 'Student' | 'Professional' | 'Researcher' | 'Enthusiast' | 'Other';
 const userTypes: {
@@ -34,7 +36,12 @@ const userTypes: {
     description: 'Just exploring',
   },
 ];
+
 export const Onboarding = ({ onComplete }: OnboardingProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const registrationData = location.state?.registrationData;
+
   const categories: Category[] = [
     'Malware',
     'Phishing',
@@ -50,30 +57,67 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<Category[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const totalSteps = 3;
+
   const handleUserTypeSelect = (type: UserType) => {
     setUserType(type);
   };
+
   const handleInterestToggle = (interest: Category) => {
     setSelectedInterests((prev) =>
       prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest],
     );
   };
+
+  const submitRegistration = async (finalUserType: string, finalInterests: Category[]) => {
+    if (!registrationData) {
+      console.error("No registration data found");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await api.post('auth', '/register', {
+        ...registrationData,
+        user_type: finalUserType,
+        user_interests: finalInterests
+      });
+      
+      if (onComplete) {
+        onComplete(finalUserType, finalInterests);
+      } else {
+        navigate(paths.LOGIN); // Or dashboard if auto-login is implemented
+      }
+    } catch (error) {
+      console.error("Registration failed during onboarding", error);
+      // Handle error (show toast, etc.)
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleNext = () => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      onComplete(userType || 'Other', selectedInterests);
+      // Final step submission
+      submitRegistration(userType || 'Other', selectedInterests);
     }
   };
+
   const handleSkip = () => {
-    onComplete('Other', []);
+    // Skip implies default values or empty interests
+    submitRegistration('Other', []);
   };
+
   const canProceed = () => {
     if (step === 2) return userType !== null;
     if (step === 3) return selectedInterests.length > 0;
     return true;
   };
+
   return (
     <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
       <div className="w-full px-6 pt-6">
@@ -275,6 +319,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 <div className="flex gap-3">
                   <motion.button
                     onClick={handleSkip}
+                    disabled={isSubmitting}
                     whileHover={{
                       scale: 1.01,
                     }}
@@ -283,28 +328,28 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                     }}
                     className="flex-1 px-6 py-3 bg-white text-morplo-gray-600 rounded-xl font-medium hover:bg-morplo-gray-200 transition-colors"
                   >
-                    Skip
+                    {isSubmitting ? 'Setting up...' : 'Skip'}
                   </motion.button>
                   <motion.button
                     onClick={handleNext}
-                    disabled={!canProceed()}
+                    disabled={!canProceed() || isSubmitting}
                     whileHover={
-                      canProceed()
+                      canProceed() && !isSubmitting
                         ? {
                             scale: 1.01,
                           }
                         : {}
                     }
                     whileTap={
-                      canProceed()
+                      canProceed() && !isSubmitting
                         ? {
                             scale: 0.98,
                           }
                         : {}
                     }
-                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
+                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() && !isSubmitting ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
                   >
-                    Complete setup
+                    {isSubmitting ? 'Completing setup...' : 'Complete setup'}
                   </motion.button>
                 </div>
               </motion.div>
