@@ -233,10 +233,18 @@
   /* Additional Spacing */
   --spacing-1_5: 1.5px;
   --spacing-51: 51px;
+
+  /* Animations */
+  --animate-slide-in: slideIn 0.3s ease-out;
 }
 
 /* Custom animations */
 @layer utilities {
+  @keyframes slideIn {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
+  }
+
   @keyframes spin-reverse {
     from {
       transform: rotate(360deg);
