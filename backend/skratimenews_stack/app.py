@@ -19,12 +19,22 @@ class SkratimenewsStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
-        # === DynamoDB Table ===
+        # === DynamoDB Table for News ===
         table = dynamodb.Table(
             self,
             "SkratimenewsTable",
             partition_key={"name": "id", "type": dynamodb.AttributeType.STRING},
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+        )
+
+        # === DynamoDB Table for User Bookmarks ===
+        bookmarks_table = dynamodb.Table(
+            self,
+            "UserBookmarksTable",
+            partition_key={"name": "user_id", "type": dynamodb.AttributeType.STRING},
+            sort_key={"name": "news_id", "type": dynamodb.AttributeType.STRING},
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         # === S3 Bucket for Audio Files ===
@@ -205,6 +215,109 @@ class SkratimenewsStack(Stack):
             authorization_type=apigateway.AuthorizationType.COGNITO,
         )
 
+        # === Bookmarks Lambda Functions ===
+        # POST /bookmarks - Add bookmark
+        add_bookmark_lambda = _lambda.Function(
+            self,
+            "AddBookmarkLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="add_bookmark.handler",
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "BOOKMARKS_TABLE_NAME": bookmarks_table.table_name,
+            },
+            timeout=Duration.seconds(30),
+        )
+        bookmarks_table.grant_read_write_data(add_bookmark_lambda)
+
+        # DELETE /bookmarks/{news_id} - Remove bookmark
+        remove_bookmark_lambda = _lambda.Function(
+            self,
+            "RemoveBookmarkLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="remove_bookmark.handler",
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "BOOKMARKS_TABLE_NAME": bookmarks_table.table_name,
+            },
+            timeout=Duration.seconds(30),
+        )
+        bookmarks_table.grant_read_write_data(remove_bookmark_lambda)
+
+        # GET /bookmarks - Get user's bookmarks
+        get_bookmarks_lambda = _lambda.Function(
+            self,
+            "GetBookmarksLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="get_bookmarks.handler",
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "BOOKMARKS_TABLE_NAME": bookmarks_table.table_name,
+                "NEWS_TABLE_NAME": table.table_name,
+            },
+            timeout=Duration.seconds(30),
+        )
+        bookmarks_table.grant_read_data(get_bookmarks_lambda)
+        table.grant_read_data(get_bookmarks_lambda)
+
+        # === API Gateway Bookmarks Endpoints ===
+        bookmarks_resource = api.root.add_resource("bookmarks")
+        bookmark_item_resource = bookmarks_resource.add_resource("{news_id}")
+
+        # POST /bookmarks
+        bookmarks_resource.add_method(
+            "POST",
+            apigateway.LambdaIntegration(add_bookmark_lambda),
+            authorizer=auth,
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+        )
+
+        # GET /bookmarks
+        bookmarks_resource.add_method(
+            "GET",
+            apigateway.LambdaIntegration(get_bookmarks_lambda),
+            authorizer=auth,
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+        )
+
+        # DELETE /bookmarks/{news_id}
+        bookmark_item_resource.add_method(
+            "DELETE",
+            apigateway.LambdaIntegration(remove_bookmark_lambda),
+            authorizer=auth,
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+        )
+
         # === CDK Outputs ===
         CfnOutput(
             self,
@@ -218,6 +331,13 @@ class SkratimenewsStack(Stack):
             "AudioBucketName",
             value=audio_bucket.bucket_name,
             description="S3 bucket for audio files",
+        )
+
+        CfnOutput(
+            self,
+            "BookmarksTableName",
+            value=bookmarks_table.table_name,
+            description="DynamoDB table for user bookmarks",
         )
 
 
