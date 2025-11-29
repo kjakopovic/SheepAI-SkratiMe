@@ -3,6 +3,8 @@ import { cors } from "hono/cors";
 import { Client } from "@notionhq/client";
 import { handle } from "hono/vercel";
 import { Resend } from "resend";
+import Parser from "rss-parser";
+import * as cheerio from "cheerio";
 
 const app = new Hono().basePath("/api");
 
@@ -44,7 +46,11 @@ const notion = new Client({
 // Initialize Resend client
 const resend = new Resend(process.env.RESEND_API_KEY || "re_NqLjZZr4_6PGtuez6aBdxndpD5S9Px3Bq");
 
+// Initialize RSS parser
+const rssParser = new Parser();
+
 const NOTION_PAGE_ID = process.env.NOTION_SUMMARY_PAGE_ID;
+const RSS_FEED_URL = "https://feeds.feedburner.com/TheHackersNews";
 
 // Health check endpoint
 app.get("/", (c) => {
@@ -293,5 +299,158 @@ function generateEmailHTML(data: {
   </body>
 </html>`;
 }
+
+// Endpoint to fetch and scrape Hacker News RSS feed
+app.get("/rss/fetch", async (c) => {
+  try {
+    console.log("Fetching RSS feed from:", RSS_FEED_URL);
+
+    // Fetch RSS feed
+    const feed = await rssParser.parseURL(RSS_FEED_URL);
+    console.log(`Found ${feed.items.length} items in RSS feed`);
+
+    // Process each article
+    const articles = await Promise.all(
+      feed.items.slice(0, 10).map(async (item) => {
+        try {
+          const articleUrl = item.link || "";
+          console.log(`Scraping article: ${articleUrl}`);
+
+          // Fetch the article HTML
+          const response = await fetch(articleUrl);
+          const html = await response.text();
+
+          // Load HTML with Cheerio
+          const $ = cheerio.load(html);
+
+          // Remove unwanted elements
+          $(".dog_two").remove();
+          $(".separator").remove();
+
+          // Extract article body
+          const articleBody = $("#articlebody");
+
+          // Get clean text content
+          let bodyText = "";
+          articleBody.find("p, h2, ul, li").each((_, element) => {
+            const text = $(element).text().trim();
+            if (text) {
+              bodyText += text + "\n\n";
+            }
+          });
+
+          // Extract image from article body
+          const firstImage = articleBody.find("img").first();
+          const imageUrl = firstImage.attr("src") || item.enclosure?.url || "";
+
+          return {
+            title: item.title || "",
+            link: articleUrl,
+            pubDate: item.pubDate || "",
+            summary: item.contentSnippet?.substring(0, 300) || "",
+            fullContent: bodyText.trim(),
+            image: imageUrl,
+            author: item.creator || "The Hacker News",
+            categories: item.categories || [],
+          };
+        } catch (error) {
+          console.error(`Error scraping article ${item.link}:`, error);
+          return {
+            title: item.title || "",
+            link: item.link || "",
+            pubDate: item.pubDate || "",
+            summary: item.contentSnippet || "",
+            fullContent: "",
+            image: item.enclosure?.url || "",
+            author: item.creator || "The Hacker News",
+            categories: item.categories || [],
+            error: "Failed to scrape article content",
+          };
+        }
+      })
+    );
+
+    return c.json({
+      success: true,
+      feedTitle: feed.title,
+      feedDescription: feed.description,
+      totalArticles: articles.length,
+      articles,
+    });
+  } catch (error: any) {
+    console.error("RSS fetch error:", error);
+    return c.json(
+      {
+        error: "Failed to fetch RSS feed",
+        details: error.message,
+      },
+      500
+    );
+  }
+});
+
+// Endpoint to fetch single article
+app.post("/rss/scrape", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { url } = body;
+
+    if (!url) {
+      return c.json({ error: "Article URL is required" }, 400);
+    }
+
+    console.log(`Scraping single article: ${url}`);
+
+    // Fetch the article HTML
+    const response = await fetch(url);
+    const html = await response.text();
+
+    // Load HTML with Cheerio
+    const $ = cheerio.load(html);
+
+    // Remove unwanted elements
+    $(".dog_two").remove();
+    $(".separator").remove();
+
+    // Extract article body
+    const articleBody = $("#articlebody");
+
+    // Get clean text content
+    let bodyText = "";
+    articleBody.find("p, h2, ul, li").each((_, element) => {
+      const text = $(element).text().trim();
+      if (text) {
+        bodyText += text + "\n\n";
+      }
+    });
+
+    // Extract metadata
+    const title = $("meta[property='og:title']").attr("content") || $("title").text();
+    const description = $("meta[property='og:description']").attr("content") || "";
+    const image = $("meta[property='og:image']").attr("content") || articleBody.find("img").first().attr("src") || "";
+    const pubDate = $("meta[property='article:published_time']").attr("content") || "";
+
+    return c.json({
+      success: true,
+      article: {
+        title,
+        url,
+        description,
+        fullContent: bodyText.trim(),
+        image,
+        pubDate,
+      },
+    });
+  } catch (error: any) {
+    console.error("Article scrape error:", error);
+    return c.json(
+      {
+        error: "Failed to scrape article",
+        details: error.message,
+      },
+      500
+    );
+  }
+});
 
 export default handle(app);
