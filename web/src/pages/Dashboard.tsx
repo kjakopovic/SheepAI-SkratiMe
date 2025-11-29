@@ -9,7 +9,6 @@ import { SimpleHeader } from '../components/ui/simple-header';
 import { TopicFilter } from '../components/ui/topic-filter';
 import config from '../config';
 import { CATEGORIES } from '../data/categories';
-import { mockArticles } from '../data/mock-data';
 import { useToggleBookmark } from '../hooks/useBookmarks';
 import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm';
 import { Article, Category } from '../types';
