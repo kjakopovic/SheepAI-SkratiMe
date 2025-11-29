@@ -1,36 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { LayoutGrid, LayoutList, Bookmark } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import config from '../config'
-import { SimpleHeader } from '../components/ui/simple-header'
-import { TopicFilter } from '../components/ui/topic-filter'
-import { ArticleCard } from '../components/ui/article-card'
-import { ArticleDetail } from '../components/ui/article-detail'
-import { mockArticles } from '../data/mock-data'
-import { Article, Category } from '../types'
-import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm'
-import { useToggleBookmark } from '../hooks/useBookmarks'
-import { CATEGORIES } from '../data/categories'
+import React, { useEffect, useRef, useState } from 'react';
+
+import { Bookmark, LayoutGrid, LayoutList } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import { ArticleCard } from '../components/ui/article-card';
+import { ArticleDetail } from '../components/ui/article-detail';
+import { SimpleHeader } from '../components/ui/simple-header';
+import { TopicFilter } from '../components/ui/topic-filter';
+import config from '../config';
+import { CATEGORIES } from '../data/categories';
+import { mockArticles } from '../data/mock-data';
+import { useToggleBookmark } from '../hooks/useBookmarks';
+import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm';
+import { Article, Category } from '../types';
 
 interface DashboardProps {
-  onSettingsClick: () => void
+  onSettingsClick: () => void;
 }
 // eslint-disable-next-line react/function-component-definition
 export function Dashboard({ onSettingsClick }: DashboardProps) {
-  const navigate = useNavigate()
-  const dataFetchedRef = useRef(false)
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
-  const [showPodcastModal, setShowPodcastModal] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
-  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false)
-  const { bookmarks } = useToggleBookmark()
+  const navigate = useNavigate();
+  const dataFetchedRef = useRef(false);
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [showPodcastModal, setShowPodcastModal] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
+  const { bookmarks } = useToggleBookmark();
 
-  const categories: Category[] = CATEGORIES
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [articles, setArticles] = useState<Article[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const categories: Category[] = CATEGORIES;
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const sendBriefingEmail = async () => {
     const response = await fetch('https://sheep-ai-skrati-me-bmxo.vercel.app/api/email/send', {
       method: 'POST',
@@ -41,66 +43,70 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
 
         breakingArticle: {
           title: 'MS Teams Guest Access Can Remove Defender Protection When Users Join External Tenants',
-          summary: 'Cybersecurity researchers have shed light on a cross-tenant blind spot that allows attackers to bypass Microsoft Defender for Office 365 protections via the guest access feature in Teams.',
-          image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_Md0lsjItddYFH1gCm6LZYxVDobM4ZWOweikeQFAT0yZNSYS8WKfg61LxSRjc49watAPtqESgvWx0UwppGQuw9FU8OMQDf9EOi1fWnVXF_H8L7QNOplD1-vdDAO-oU4cRg9CX2jky45M7SkmAF6b7GGi7UwMZQN4_7wnlG2D1mYl28_sUC7hLta8u37Oa/s790-rw-e365/msteams.jpg',
+          summary:
+            'Cybersecurity researchers have shed light on a cross-tenant blind spot that allows attackers to bypass Microsoft Defender for Office 365 protections via the guest access feature in Teams.',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_Md0lsjItddYFH1gCm6LZYxVDobM4ZWOweikeQFAT0yZNSYS8WKfg61LxSRjc49watAPtqESgvWx0UwppGQuw9FU8OMQDf9EOi1fWnVXF_H8L7QNOplD1-vdDAO-oU4cRg9CX2jky45M7SkmAF6b7GGi7UwMZQN4_7wnlG2D1mYl28_sUC7hLta8u37Oa/s790-rw-e365/msteams.jpg',
           url: 'https://thehackernews.com/2025/11/ms-teams-guest-access-can-remove.html',
-          source: 'Ravie Lakshmanan'
+          source: 'Ravie Lakshmanan',
         },
         relatedArticles: [
           {
             title: 'Legacy Python Bootstrap Scripts Create Domain-Takeover Risk in Multiple PyPI Packages',
-            summary: 'Cybersecurity researchers have discovered vulnerable code in legacy Python packages that could potentially pave the way for a supply chain compromise on the Python Package Index (PyPI) via a domain takeover attack.',
-            image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhMdVHqK8sA27WWR3ySGxson4kuqmBaXHQlFm3PSmRaHV6IGdnk_zK0tUvgrFyKepL2COnnm_yiIBdTy-ho7pFKSPQP7cCxkOugoV0s_2k3dUBYC0FI5BkY2tmR3Tsbxktsq7TnQRqzDhiOHe9SjVrRq2XHt5BYU01ctj8yUA8BTv6cDT8zREtEYAdrViUn/s790-rw-e365/setuptools.jpg',
+            summary:
+              'Cybersecurity researchers have discovered vulnerable code in legacy Python packages that could potentially pave the way for a supply chain compromise on the Python Package Index (PyPI) via a domain takeover attack.',
+            image:
+              'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhMdVHqK8sA27WWR3ySGxson4kuqmBaXHQlFm3PSmRaHV6IGdnk_zK0tUvgrFyKepL2COnnm_yiIBdTy-ho7pFKSPQP7cCxkOugoV0s_2k3dUBYC0FI5BkY2tmR3Tsbxktsq7TnQRqzDhiOHe9SjVrRq2XHt5BYU01ctj8yUA8BTv6cDT8zREtEYAdrViUn/s790-rw-e365/setuptools.jpg',
             url: 'https://thehackernews.com/2025/11/legacy-python-bootstrap-scripts-create.html',
-            source: 'Ravie Lakshmanan'
+            source: 'Ravie Lakshmanan',
           },
           {
             title: 'North Korean Hackers Deploy 197 npm Packages to Spread Updated OtterCookie Malware',
-            summary: 'The North Korean threat actors behind the Contagious Interview campaign have continued to flood the npm registry with 197 more malicious packages since last month.',
-            image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbHywoT-t7dx-yFp5L6Kj6AHPWvHYFoziGtqauAQGWvY55xCGgiw80AKaK962SgdMmomBf9EMT9cPAGPxx5GTi4lFq_ckm1Cjk3hGtRo1AnWVEjZkd89HlSOWuLuBC-whL565LElFcq2D55c9NrmQHx30eGNNugpcLqPAKDxRC5Zkwb-1lX1OC4Xu-QH13/s790-rw-e365/npm-malware.jpg',
+            summary:
+              'The North Korean threat actors behind the Contagious Interview campaign have continued to flood the npm registry with 197 more malicious packages since last month.',
+            image:
+              'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbHywoT-t7dx-yFp5L6Kj6AHPWvHYFoziGtqauAQGWvY55xCGgiw80AKaK962SgdMmomBf9EMT9cPAGPxx5GTi4lFq_ckm1Cjk3hGtRo1AnWVEjZkd89HlSOWuLuBC-whL565LElFcq2D55c9NrmQHx30eGNNugpcLqPAKDxRC5Zkwb-1lX1OC4Xu-QH13/s790-rw-e365/npm-malware.jpg',
             url: 'https://thehackernews.com/2025/11/north-korean-hackers-deploy-197-npm.html',
-            source: 'The Hacker News'
+            source: 'The Hacker News',
           },
           {
             title: 'MS Teams Guest Access Can Remove Defender Protection When Users Join External Tenants',
-            summary: 'Cybersecurity researchers have shed light on a cross-tenant blind spot that allows attackers to bypass Microsoft Defender for Office 365 protections via the guest access feature in Teams.',
-            image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_Md0lsjItddYFH1gCm6LZYxVDobM4ZWOweikeQFAT0yZNSYS8WKfg61LxSRjc49watAPtqESgvWx0UwppGQuw9FU8OMQDf9EOi1fWnVXF_H8L7QNOplD1-vdDAO-oU4cRg9CX2jky45M7SkmAF6b7GGi7UwMZQN4_7wnlG2D1mYl28_sUC7hLta8u37Oa/s790-rw-e365/msteams.jpg',
+            summary:
+              'Cybersecurity researchers have shed light on a cross-tenant blind spot that allows attackers to bypass Microsoft Defender for Office 365 protections via the guest access feature in Teams.',
+            image:
+              'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_Md0lsjItddYFH1gCm6LZYxVDobM4ZWOweikeQFAT0yZNSYS8WKfg61LxSRjc49watAPtqESgvWx0UwppGQuw9FU8OMQDf9EOi1fWnVXF_H8L7QNOplD1-vdDAO-oU4cRg9CX2jky45M7SkmAF6b7GGi7UwMZQN4_7wnlG2D1mYl28_sUC7hLta8u37Oa/s790-rw-e365/msteams.jpg',
             url: 'https://thehackernews.com/2025/11/ms-teams-guest-access-can-remove.html',
-            source: 'The Hacker News'
-          }
-        ]
-      })
-    }
-
-    );
+            source: 'The Hacker News',
+          },
+        ],
+      }),
+    });
 
     const result = await response.json();
     console.log(result);
   };
   useEffect(() => {
-    const token = localStorage.getItem('idToken')
+    const token = localStorage.getItem('idToken');
     if (!token) {
-      navigate('/login')
-      return
+      navigate('/login');
+      return;
     }
 
     // Prevent double-fetching in Strict Mode or on quick remounts
-    if (dataFetchedRef.current) return
-    dataFetchedRef.current = true
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
 
     const fetchNews = async () => {
       try {
-        const token = localStorage.getItem('idToken')
-        console.log(token)
+        const token = localStorage.getItem('idToken');
+        console.log(token);
         const response = await fetch('https://1zt5usufzc.execute-api.eu-central-1.amazonaws.com/prod/news', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
+        });
 
-
-
-        const data = await response.json()
+        const data = await response.json();
         console.log(data.items);
         const mappedArticles: Article[] = data.items.map((item: any) => ({
           id: item.id,
@@ -121,41 +127,39 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
           imageUrl: item.picture_url,
           fullContent: item.full_article,
           linkToArticle: item.news_link,
-
-        }))
-        setArticles(mappedArticles)
+        }));
+        setArticles(mappedArticles);
       } catch (error) {
-        console.error('Error fetching news:', error)
+        console.error('Error fetching news:', error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchNews()
+    fetchNews();
     sendBriefingEmail();
-
-  }, [navigate])
+  }, [navigate]);
 
   useEffect(() => {
-    const now = new Date()
-    const hours = now.getHours()
+    const now = new Date();
+    const hours = now.getHours();
     // Check if time is between 7:00 and 7:59
     if (hours === 18) {
-      setShowPodcastModal(true)
+      setShowPodcastModal(true);
     }
-  }, [])
+  }, []);
 
   const handlePlayPodcast = async () => {
     if (isPlaying && audio) {
-      audio.pause()
-      setIsPlaying(false)
-      return
+      audio.pause();
+      setIsPlaying(false);
+      return;
     }
 
     if (audio) {
-      audio.play()
-      setIsPlaying(true)
-      return
+      audio.play();
+      setIsPlaying(true);
+      return;
     }
 
     try {
@@ -163,7 +167,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        if (user.email !== 'mikulec.marin52@gmail.com' || user.email !== 'hi@leonard.solutions') {
+        if (user.email !== 'mikulec.marin52@gmail.com' && user.email !== 'hi@leonard.solutions') {
           console.log('User not authorized for TTS API');
           return;
         }
@@ -172,15 +176,15 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
         return;
       }
 
-      const text = "Good morning! Here is your daily cybersecurity briefing. Major data breaches were reported in the retail sector, and a new zero-day vulnerability affects popular cloud services."
-
+      const text =
+        'Good morning! Here is your daily cybersecurity briefing. Major data breaches were reported in the retail sector, and a new zero-day vulnerability affects popular cloud services.';
 
       // WARNING: Exposing API keys on the client side is a security risk.
       // Ensure you restrict this key in Google Cloud Console to your domain.
       const apiKey = import.meta.env.VITE_GOOGLE_TTS_API_KEY;
 
       if (!apiKey) {
-        console.error("Google TTS API Key is missing. Please add VITE_GOOGLE_TTS_API_KEY to your .env file.");
+        console.error('Google TTS API Key is missing. Please add VITE_GOOGLE_TTS_API_KEY to your .env file.');
         return;
       }
 
@@ -193,7 +197,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
           input: { text },
           voice: {
             languageCode: 'en-US',
-            name: 'en-US-Chirp-HD-D'
+            name: 'en-US-Chirp-HD-D',
           },
           audioConfig: { audioEncoding: 'MP3' },
         }),
@@ -202,49 +206,45 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
       const data = await response.json();
 
       if (data.audioContent) {
-        const newAudio = new Audio(`data:audio/mp3;base64,${data.audioContent}`)
-        newAudio.onended = () => setIsPlaying(false)
-        setAudio(newAudio)
-        newAudio.play()
-        setIsPlaying(true)
+        const newAudio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+        newAudio.onended = () => setIsPlaying(false);
+        setAudio(newAudio);
+        newAudio.play();
+        setIsPlaying(true);
       } else {
         console.error('No audio content received from Google TTS', data);
       }
     } catch (error) {
-      console.error('Failed to play podcast:', error)
+      console.error('Failed to play podcast:', error);
     }
-  }
+  };
 
   const handleToggleCategory = (category: Category) => {
     setSelectedCategories((prev) =>
-      prev.some((c) => c.id === category.id)
-        ? prev.filter((c) => c.id !== category.id)
-        : [...prev, category],
-    )
-  }
+      prev.some((c) => c.id === category.id) ? prev.filter((c) => c.id !== category.id) : [...prev, category],
+    );
+  };
 
   // Filter articles first
   const filteredArticles = articles.filter((article) => {
-    if (showBookmarksOnly && !bookmarks.includes(article.id)) return false
-    if (selectedCategories.length === 0) return true
+    if (showBookmarksOnly && !bookmarks.includes(article.id)) return false;
+    if (selectedCategories.length === 0) return true;
     return article.category.some((articleCatId) =>
       selectedCategories.some((selectedCat) => selectedCat.id === articleCatId),
-    )
-  })
+    );
+  });
 
   // Then sort them by relevance score
-  const sortedArticles = sortArticlesByRelevance(filteredArticles)
+  const sortedArticles = sortArticlesByRelevance(filteredArticles);
 
   return (
     <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
-
-      <div className='md:fixed top-0 left-0 right-0'>
+      <div className="md:fixed top-0 left-0 right-0">
         <SimpleHeader />
       </div>
 
-
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden ">
-        <div className='md:h-screen md:fixed top-18'>
+        <div className="md:h-screen md:fixed top-18">
           <TopicFilter
             categories={categories}
             selectedCategories={selectedCategories}
@@ -257,10 +257,11 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
             <div className="flex justify-end mb-6 gap-3">
               <button
                 onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
-                className={`px-3 py-2 rounded-lg border border-gray-200 flex items-center gap-2 transition-all shadow-sm ${showBookmarksOnly
-                  ? 'bg-morplo-blue-100 text-white border-morplo-blue-100'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
+                className={`px-3 py-2 rounded-lg border border-gray-200 flex items-center gap-2 transition-all shadow-sm ${
+                  showBookmarksOnly
+                    ? 'bg-morplo-blue-100 text-white border-morplo-blue-100'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
               >
                 <Bookmark size={18} className={showBookmarksOnly ? 'fill-current' : ''} />
                 <span className="text-sm font-medium hidden md:inline">Saved</span>
@@ -269,20 +270,22 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
               <div className="bg-white p-1 rounded-lg border border-gray-200 flex gap-1 shadow-sm">
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'list'
-                    ? 'bg-gray-100 text-blue-600 shadow-sm'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                    }`}
+                  className={`p-2 rounded-md transition-all ${
+                    viewMode === 'list'
+                      ? 'bg-gray-100 text-blue-600 shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                  }`}
                   title="List view"
                 >
                   <LayoutList size={20} />
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-md transition-all ${viewMode === 'grid'
-                    ? 'bg-gray-100 text-blue-600 shadow-sm'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                    }`}
+                  className={`p-2 rounded-md transition-all ${
+                    viewMode === 'grid'
+                      ? 'bg-gray-100 text-blue-600 shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                  }`}
                   title="Grid view"
                 >
                   <LayoutGrid size={20} />
@@ -292,33 +295,30 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
 
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morplo-blue-100 mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morplo-blue-100 mb-4" />
                 <p className="text-morplo-gray-500 animate-pulse">Curating your feed...</p>
               </div>
             ) : filteredArticles.length === 0 ? (
               <div className="bg-white rounded-xl p-8 md:p-16 text-center">
-                <p className="text-lg text-[var(--text-secondary)] mb-2">
-                  No articles found
-                </p>
-                <p className="text-sm text-morplo-gray-500">
-                  Try adjusting your filters
-                </p>
+                <p className="text-lg text-[var(--text-secondary)] mb-2">No articles found</p>
+                <p className="text-sm text-morplo-gray-500">Try adjusting your filters</p>
               </div>
             ) : (
-              <div className={
-                viewMode === 'list'
-                  ? 'space-y-4 md:space-y-6'
-                  : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6'
-              } >
+              <div
+                className={
+                  viewMode === 'list'
+                    ? 'space-y-4 md:space-y-6'
+                    : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6'
+                }
+              >
                 {sortedArticles.map((article) => (
                   <ArticleCard
                     key={article.id}
                     article={article}
                     viewMode={viewMode}
                     onClick={() => {
-                      trackArticleClick(article)
-                      setSelectedArticle(article)
-
+                      trackArticleClick(article);
+                      setSelectedArticle(article);
                     }}
                   />
                 ))}
@@ -328,12 +328,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
         </main>
       </div>
 
-      {selectedArticle && (
-        <ArticleDetail
-          article={selectedArticle}
-          onClose={() => setSelectedArticle(null)}
-        />
-      )}
+      {selectedArticle && <ArticleDetail article={selectedArticle} onClose={() => setSelectedArticle(null)} />}
 
       {showPodcastModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -354,8 +349,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
 
@@ -372,16 +367,12 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
-                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                  <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Good Morning! ☀️
-              </h2>
-              <p className="text-gray-600 mt-2">
-                Here is an overview of what happened while you were away.
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">Good Morning! ☀️</h2>
+              <p className="text-gray-600 mt-2">Here is an overview of what happened while you were away.</p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-4 mb-6 flex items-center gap-4 border border-gray-100">
@@ -399,8 +390,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                     stroke="none"
                     className="-ml-1" // Center the pause icon
                   >
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
+                    <rect x="6" y="4" width="4" height="16" />
+                    <rect x="14" y="4" width="4" height="16" />
                   </svg>
                 ) : (
                   <svg
@@ -411,7 +402,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                     fill="currentColor"
                     stroke="none"
                   >
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
                 )}
               </button>
@@ -421,8 +412,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                   {isPlaying ? (
                     <>
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-morplo-blue-100 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-morplo-blue-100"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-morplo-blue-100 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-morplo-blue-100" />
                       </span>
                       Playing now...
                     </>
@@ -443,5 +434,5 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

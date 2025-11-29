@@ -1,76 +1,73 @@
-# SheepAI-SkratiMe
+# Skrati.me - AI-Powered News Intelligence Platform
 
 ## Overview
 
-SheepAI-SkratiMe is a modern, serverless news platform that allows users to consume news content in both text and audio formats. Built for a hackathon, this full-stack application leverages AWS services to provide a scalable, cloud-native solution for personalized news delivery.
+Skrati.me is a next-generation news intelligence platform designed for busy professionals and decision-makers. It combines a robust serverless AWS architecture for content delivery with a cutting-edge AI layer (Gemini 1.5 Flash) to transform raw news into actionable insights. 
 
-## Key Features
+Users don't just "read" news; they interact with it—getting instant summaries, bias checks, and executive briefings, all integrated seamlessly into their productivity workflows (Notion, Email).
 
-- **User Authentication**: Secure user registration and login powered by AWS Cognito
-- **News Management**: Full CRUD operations for news articles with category-based organization
-- **Text-to-Speech**: Convert news articles to audio using AWS Polly, allowing users to listen to their news on the go
-- **Personalized Categories**: Users can customize their news feed by selecting personal categories
-- **Modern Web Interface**: Responsive React-based frontend with Tailwind CSS and shadcn/ui components
-- **Serverless Architecture**: Fully serverless backend using AWS Lambda, DynamoDB, API Gateway, and S3
+## 🚀 Key Features for Hackathon Pitch
 
-## Technology Stack
+### 🧠 Generative AI Analyst (Powered by Gemini 1.5 Flash)
+Instead of static articles, every piece of content comes with an on-demand AI analyst:
+- **Flashpoint Mode:** Instant, high-level summaries for rapid consumption.
+- **Executive Brief:** Deep-dive analysis extracting key stakeholders, implications, and timeline.
+- **Balance Check:** AI-driven bias detection to identify potential narrative skew.
+- **Auto-Categorization:** Real-time classification of incoming RSS feeds using LLMs for superior accuracy.
 
-### Frontend
-- **React 19** with TypeScript
-- **Vite** for fast development and building
-- **TanStack Query** (React Query) for server state management
-- **React Router v7** for navigation
-- **Tailwind CSS v4** with shadcn/ui components
-- **i18next** for internationalization
-- **Framer Motion** for animations
-- **React Hook Form** with Yup/Zod validation
+### 🎯 Intelligent Personalization
+- **Behavioral Relevance Engine:** Client-side algorithm that learns from reading habits (click tracking) to bubble up the most relevant stories.
+- **Custom Feeds:** Users define their interest vectors (e.g., "Cybersecurity", "Cloud", "AI").
 
-### Backend
-- **AWS CDK** (Python) for infrastructure as code
-- **AWS Cognito** for authentication and user management
-- **AWS Lambda** (Python 3.12) for serverless compute
-- **AWS API Gateway** for REST API endpoints
-- **AWS DynamoDB** for NoSQL database
-- **AWS Polly** for text-to-speech conversion
-- **AWS S3** for audio file storage
-- **PynamoDB** for DynamoDB ORM
-- **Pydantic** for data validation
-- **AWS Lambda Powertools** for observability
+### 🔌 Productivity Integrations
+- **One-Click Notion Export:** Instantly save articles, AI summaries, and chat insights directly to a Notion workspace.
+- **Smart Briefings:** Automated email newsletters generated via Resend, summarizing top stories.
 
-## Architecture
+### 🎧 Multi-Modal Consumption
+- **Text-to-Speech:** AWS Polly integration converts any article into an audio stream for on-the-go listening.
 
-The application consists of two main CDK stacks:
+## 🛠️ Technology Stack
 
-1. **Authentication Stack** (`skratimeauth_auth_stack`)
-   - Cognito User Pool for user management
-   - Lambda functions for registration and login
-   - API Gateway endpoints for authentication
+### AI & Edge Layer (`notion-server`)
+- **Runtime:** Node.js with Hono (Lightweight Web Framework)
+- **AI Model:** Google Gemini 1.5 Flash (via `@google/generative-ai`)
+- **Scraping:** `rss-parser` & `cheerio` for real-time content ingestion
+- **Integrations:** Notion API (Block appending), Resend API (Email)
 
-2. **News Stack** (`skratimenews_stack`)
-   - DynamoDB table for storing news articles
-   - Lambda functions for CRUD operations
-   - Category management and filtering
-   - Text-to-speech conversion using AWS Polly
-   - S3 bucket for hosting generated audio files
-   - Cognito-protected API endpoints
+### Core Cloud Infrastructure (AWS Serverless)
+- **Compute:** AWS Lambda (Python 3.12)
+- **Database:** DynamoDB (News storage & User profiles)
+- **Auth:** AWS Cognito (Secure identity management)
+- **Storage:** S3 (Audio assets)
+- **IaC:** AWS CDK
+
+### Frontend Experience (`web`)
+- **Framework:** React 19 + Vite
+- **Styling:** Tailwind CSS v4 + shadcn/ui
+- **Visuals:** WebGL-powered "Aurora" dynamic background
+- **State:** TanStack Query + React Router v7
+- **Logic:** Custom relevance algorithms & local storage persistence
+
+## 🏗️ Architecture Highlights
+
+The system operates on a hybrid architecture:
+1.  **Ingestion Pipeline:** AWS Lambdas fetch and store core news data.
+2.  **Intelligence Layer:** The Hono server acts as an intelligent proxy, fetching raw content, passing it through Gemini for enrichment (categorization/summarization), and handling third-party integrations (Notion/Email).
+3.  **Delivery:** The React frontend unifies these streams, presenting a polished, high-performance UI with granular control over the reading experience.
 
 ## Use Cases
 
-1. **Busy Professionals**: Listen to news during commute or workouts
-2. **Accessibility**: Provides audio alternatives for visually impaired users
-3. **Multitasking**: Consume news while performing other tasks
-4. **Personalization**: Curate news feed based on interests
+1.  **The C-Suite Executive:** Needs "Executive Briefs" pushed to their Notion dashboard every morning.
+2.  **The Commuter:** Uses "Text-to-Speech" to listen to the "Balance Check" of controversial topics while driving.
+3.  **The Researcher:** Uses the AI Chatbot to interrogate articles ("What are the sources for this claim?") and exports findings.
 
 ## Project Structure
 
-```
+```bash
 sheepai/
-├── backend/
-│   ├── skratimeauth_auth_stack/    # Authentication infrastructure
-│   └── skratimenews_stack/         # News and audio infrastructure
-└── web/                            # React frontend application
+├── backend/                # AWS Serverless Core
+│   ├── skratimeauth.../    # Cognito Auth Stack
+│   └── skratimenews.../    # News & Polly Stack
+├── notion-server/          # AI & Integration Layer (Hono + Gemini)
+└── web/                    # React 19 Frontend
 ```
-
-## Development
-
-The project uses modern DevOps practices with Docker support for local development and AWS CDK for cloud deployment. The frontend is containerized for easy setup, while the backend uses infrastructure as code for reproducible deployments.
