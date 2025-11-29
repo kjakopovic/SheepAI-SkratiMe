@@ -7,24 +7,39 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_cognito as cognito,
     aws_apigateway as apigateway,
-    aws_s3 as s3,
+    aws_events as events,
+    aws_sqs as sqs,
+    aws_events_targets as targets,
+    Duration,
     aws_iam as iam,
 )
 from constructs import Construct
 from aws_cdk import CfnOutput
 import os
 
+BEDROCK_MODEL_ID = "amazon.titan-text-lite-v1"
+
 
 class SkratimenewsStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
-        # === DynamoDB Table ===
+        # === DynamoDB Table for News ===
         table = dynamodb.Table(
             self,
             "SkratimenewsTable",
             partition_key={"name": "id", "type": dynamodb.AttributeType.STRING},
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+        )
+
+        # === DynamoDB Table for User Bookmarks ===
+        bookmarks_table = dynamodb.Table(
+            self,
+            "UserBookmarksTable",
+            partition_key={"name": "user_id", "type": dynamodb.AttributeType.STRING},
+            sort_key={"name": "news_id", "type": dynamodb.AttributeType.STRING},
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         # === S3 Bucket for Audio Files ===
@@ -73,6 +88,23 @@ class SkratimenewsStack(Stack):
             projection_type=dynamodb.ProjectionType.ALL,
         )
 
+        fetch_table = dynamodb.Table(
+            self,
+            "ScrapeTracking",
+            partition_key={
+                "name": "last_scrape",
+                "type": dynamodb.AttributeType.STRING,
+            },
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+        )
+
+        categories_table = dynamodb.Table(
+            self,
+            "CategoriesTable",
+            partition_key={"name": "id", "type": dynamodb.AttributeType.STRING},
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+        )
+
         # === Lambda Functions ===
 
         # Import existing Cognito User Pool
@@ -96,6 +128,8 @@ class SkratimenewsStack(Stack):
         # Create API resources
         items_resource = api.root.add_resource("news")
         item_resource = items_resource.add_resource("{id}")
+
+        categories_resource = api.root.add_resource("categories")
 
         # Create Lambda functions and integrate with API Gateway
         lambda_functions = {}
@@ -125,7 +159,66 @@ class SkratimenewsStack(Stack):
 
             lambda_functions[op] = fn
 
+        get_category_lambda = _lambda.Function(
+            self,
+            "GetCategoryLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="get_category.handler",
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "CATEGORIES_TABLE_NAME": categories_table.table_name,
+            },
+        )
+
+        create_category_lambda = _lambda.Function(
+            self,
+            "CreateCategoryLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="create_category.handler",
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "CATEGORIES_TABLE_NAME": categories_table.table_name,
+            },
+        )
+
+        categories_table.grant_read_write_data(create_category_lambda)
+        categories_table.grant_read_data(get_category_lambda)
+
         # Add methods to API Gateway with Cognito authorizer
+        categories_resource.add_method(
+            "POST",
+            apigateway.LambdaIntegration(create_category_lambda),
+            authorizer=auth,
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+        )
+
+        categories_resource.add_method(
+            "GET",
+            apigateway.LambdaIntegration(get_category_lambda),
+            authorizer=auth,
+            authorization_type=apigateway.AuthorizationType.COGNITO,
+        )
+
         items_resource.add_method(
             "POST",
             apigateway.LambdaIntegration(lambda_functions["create"]),
@@ -154,16 +247,18 @@ class SkratimenewsStack(Stack):
             authorization_type=apigateway.AuthorizationType.COGNITO,
         )
 
-        # === Text-to-Speech Lambda Function ===
-        # Create audio generation endpoint: POST /news/audio
-        audio_resource = items_resource.add_resource("audio")
-
-        # Lambda function for generating audio from news posts
-        generate_audio_lambda = _lambda.Function(
+        # === SQS Queue ===
+        rss_queue = sqs.Queue(
             self,
-            "GenerateAudioSkratimenewsLambda",
+            "RssNewsQueue",
+            visibility_timeout=Duration.seconds(120),
+        )
+
+        categorizer_lambda = _lambda.Function(
+            self,
+            "CategorizerLambda",
             runtime=_lambda.Runtime.PYTHON_3_12,
-            handler="generate_audio_skratimenews.handler",
+            handler="categorizer.lambda_handler",
             code=_lambda.Code.from_asset(
                 os.path.join("lambdas"),
                 bundling={
@@ -176,49 +271,67 @@ class SkratimenewsStack(Stack):
                 },
             ),
             environment={
-                "TABLE_NAME": table.table_name,
-                "AUDIO_BUCKET_NAME": audio_bucket.bucket_name,
-                "POLLY_VOICE_ID": "Joanna",  # Can be changed to other voices
+                "NEWS_TABLE_NAME": table.table_name,
+                "CATEGORIES_TABLE_NAME": categories_table.table_name,
             },
-            timeout=Duration.seconds(120),  # Increased timeout for Polly processing
-            memory_size=512,  # Increased memory for audio processing
         )
 
-        # Grant permissions to Lambda
-        table.grant_read_data(generate_audio_lambda)  # Read news items
-        audio_bucket.grant_put(generate_audio_lambda)  # Upload audio files
-        audio_bucket.grant_read(generate_audio_lambda)  # Generate presigned URLs
+        categorizer_lambda.add_event_source_mapping(
+            "CategorizerQueueMapping",
+            event_source_arn=rss_queue.queue_arn,
+            batch_size=10,
+            enabled=True,
+        )
 
-        # Grant Polly permissions
-        generate_audio_lambda.add_to_role_policy(
+        categorizer_lambda.add_to_role_policy(
             iam.PolicyStatement(
-                actions=["polly:SynthesizeSpeech"],
-                resources=["*"],  # Polly doesn't support resource-level permissions
+                actions=["bedrock:InvokeModel"],
+                resources=[
+                    f"arn:aws:bedrock:{self.region}::foundation-model/{BEDROCK_MODEL_ID}"
+                ],
             )
         )
 
-        # Add API Gateway method for audio generation
-        audio_resource.add_method(
-            "POST",
-            apigateway.LambdaIntegration(generate_audio_lambda),
-            authorizer=auth,
-            authorization_type=apigateway.AuthorizationType.COGNITO,
+        rss_queue.grant_consume_messages(categorizer_lambda)
+        categories_table.grant_read_write_data(categorizer_lambda)
+        table.grant_read_write_data(categorizer_lambda)
+
+        # === RSS Lambda ===
+        rss_lambda = _lambda.Function(
+            self,
+            "RssFetcherLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="scrape_web.lambda_handler",
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools feedparser beautifulsoup4 requests -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "RSS_URL": "https://feeds.feedburner.com/TheHackersNews",
+                "TABLE_NAME": fetch_table.table_name,
+                "RSS_QUEUE_URL": rss_queue.queue_url,
+            },
         )
 
-        # === CDK Outputs ===
-        CfnOutput(
+        # Grant permissions
+        fetch_table.grant_read_write_data(rss_lambda)
+        rss_queue.grant_send_messages(rss_lambda)
+
+        # === EventBridge Rule ===
+        rule = events.Rule(
             self,
-            "ApiEndpoint",
-            value=api.url,
-            description="API Gateway endpoint URL",
+            "RssScheduleRule",
+            schedule=events.Schedule.rate(duration=Duration.minutes(2)),
         )
 
-        CfnOutput(
-            self,
-            "AudioBucketName",
-            value=audio_bucket.bucket_name,
-            description="S3 bucket for audio files",
-        )
+        rule.add_target(targets.LambdaFunction(rss_lambda))
 
 
 app = App()
