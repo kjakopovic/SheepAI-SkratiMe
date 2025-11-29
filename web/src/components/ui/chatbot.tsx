@@ -1,76 +1,201 @@
-import React, { useState } from 'react'
-import { MessageCircleIcon, XIcon, SendIcon } from 'lucide-react'
-export function Chatbot() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [message, setMessage] = useState('')
+import React, { useState, useRef, useEffect } from 'react'
+import { MessageCircle, X, Send, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
+import { cn } from '../../lib/utils'
+
+interface Message {
+  id: string
+  text: string
+  isUser: boolean
+  timestamp: Date
+}
+
+export const Chatbot = () => {
+  const [viewState, setViewState] = useState<'closed' | 'options' | 'chat'>('closed')
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: 'Hi! I can help you navigate the news or answer questions about articles. What would you like to do?',
+      isUser: false,
+      timestamp: new Date(),
+    },
+  ])
+  const [inputValue, setInputValue] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    if (viewState === 'chat') {
+      scrollToBottom()
+    }
+  }, [messages, viewState])
+
+  const options = [
+    'Explain to me like i am 5',
+    'Summarize the article',
+    'why is this article important',
+    'Why is this article relevant?',
+    'Ask me a question'
+  ]
+
+  const handleSendMessage = (text: string) => {
+    if (!text.trim()) return
+
+    const newUserMsg: Message = {
+      id: Date.now().toString(),
+      text,
+      isUser: true,
+      timestamp: new Date(),
+    }
+
+    setMessages((prev) => [...prev, newUserMsg])
+    setInputValue('')
+
+    // Simulate bot response
+    setTimeout(() => {
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: `I'm processing your request for: "${text}". This is a demo response.`,
+        isUser: false,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, botResponse])
+    }, 1000)
+  }
+
+  const handleOptionClick = (opt: string) => {
+    setViewState('chat')
+    if (opt !== 'Ask me a question') {
+      handleSendMessage(opt)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage(inputValue)
+    }
+  }
+
+  const toggleChat = () => {
+    setViewState((prev) => (prev === 'closed' ? 'options' : 'closed'))
+  }
+
   return (
-    <>
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[var(--accent-blue)] hover:bg-opacity-90 transition-all flex items-center justify-center shadow-lg z-50"
-        >
-          <MessageCircleIcon className="w-6 h-6 text-white" />
-        </button>
-      )}
-
-      {isOpen && (
-        <div className="fixed bottom-4 right-4 left-4 md:left-auto md:bottom-6 md:right-6 md:w-96 h-[500px] max-h-[80vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border border-[var(--border-subtle)]">
-          <div className="bg-[var(--bg-secondary)] border-b border-[var(--border-subtle)] px-6 py-4 flex items-center justify-between rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--accent-blue)] flex items-center justify-center">
-                <MessageCircleIcon className="w-4 h-4 text-white" />
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
+      <AnimatePresence mode="wait">
+        {viewState === 'chat' && (
+          <motion.div
+            key="chat-window"
+            initial={{ opacity: 0, y: 20, scale: 0.95, transformOrigin: 'bottom right' }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="bg-card border border-border shadow-2xl rounded-2xl w-[90vw] sm:w-96 overflow-hidden flex flex-col h-[500px] max-h-[80vh]"
+          >
+            {/* Header */}
+            <div className="p-4 border-b border-border bg-primary/5 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-lg">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">AI Assistant</h3>
+                  <p className="text-[10px] text-muted-foreground">
+                    Always here to help
+                  </p>
+                </div>
               </div>
-              <span className="font-semibold text-sm text-[var(--text-primary)]">
-                Assistant
-              </span>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
-            >
-              <XIcon className="w-4 h-4 text-[var(--text-secondary)]" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto scrollbar-thin p-6 space-y-4">
-            <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
-              <p className="text-sm text-[var(--text-secondary)] mb-3">
-                Hi! I can help you with:
-              </p>
-              <ul className="text-sm text-[var(--text-secondary)] space-y-2">
-                <li>• Finding specific articles</li>
-                <li>• Updating your preferences</li>
-                <li>• Explaining credibility scores</li>
-                <li>• Managing your feed</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-[var(--border-subtle)] p-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 px-4 py-2 bg-[var(--bg-secondary)] rounded-lg text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    setMessage('')
-                  }
-                }}
-              />
               <button
-                onClick={() => setMessage('')}
-                className="px-4 py-2 bg-[var(--accent-blue)] hover:bg-opacity-90 rounded-lg transition-colors flex items-center justify-center"
+                onClick={() => setViewState('closed')}
+                className="text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-md transition-colors"
               >
-                <SendIcon className="w-4 h-4 text-white" />
+                <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50">
+              {messages.map((msg) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={msg.id}
+                  className={cn(
+                    'flex w-full',
+                    msg.isUser ? 'justify-end' : 'justify-start',
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
+                      msg.isUser
+                        ? 'bg-primary text-primary-foreground rounded-br-none'
+                        : 'bg-card border border-border text-card-foreground rounded-bl-none',
+                    )}
+                  >
+                    {msg.text}
+                  </div>
+                </motion.div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="p-3 border-t border-border bg-background">
+              <div className="flex gap-2 items-center bg-muted/30 p-1.5 rounded-xl border border-border/50 focus-within:border-primary/50 focus-within:bg-muted/50 transition-all">
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me anything..."
+                  className="flex-1 bg-transparent border-none focus:ring-0 text-sm px-2 py-1 placeholder:text-muted-foreground/70"
+                />
+                <button
+                  onClick={() => handleSendMessage(inputValue)}
+                  disabled={!inputValue.trim()}
+                  className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {viewState === 'options' && (
+          <div className="flex flex-col items-end gap-2 mb-2">
+            {options.map((opt, i) => (
+              <motion.button
+                key={opt}
+                initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 20, scale: 0.8 }}
+                transition={{ delay: i * 0.1 }}
+                onClick={() => handleOptionClick(opt)}
+                className="bg-card border border-border shadow-lg px-4 py-2 rounded-2xl rounded-br-none text-sm font-medium hover:bg-accent hover:scale-105 transition-all"
+              >
+                {opt}
+              </motion.button>
+            ))}
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </AnimatePresence>
+
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={toggleChat}
+        className={cn(
+          "h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-50",
+          viewState !== 'closed' ? "bg-muted text-foreground rotate-90" : "bg-primary text-primary-foreground hover:bg-primary/90"
+        )}
+      >
+        {viewState !== 'closed' ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+      </motion.button>
+    </div>
   )
 }

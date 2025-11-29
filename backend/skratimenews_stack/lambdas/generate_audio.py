@@ -19,7 +19,7 @@ PRESIGNED_URL_EXPIRY = int(os.environ.get("PRESIGNED_URL_EXPIRY", "3600"))  # 1 
 # Polly configuration
 POLLY_VOICE_ID = os.environ.get("POLLY_VOICE_ID", "Joanna")
 POLLY_ENGINE = os.environ.get("POLLY_ENGINE", "neural")  # neural or standard
-POLLY_MAX_CHARS = 3000  # AWS Polly limit per request
+POLLY_MAX_CHARS = 4000  # AWS Polly limit per request
 
 # AWS clients
 polly_client = boto3.client("polly", region_name=AWS_REGION)
