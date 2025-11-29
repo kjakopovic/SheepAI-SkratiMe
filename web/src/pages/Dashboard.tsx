@@ -106,7 +106,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
           id: item.id,
           title: item.title,
           source: 'SkratiMe',
-          sourceUrl: '#',
+          sourceUrl: item.url,
           publishedAt: new Date().toISOString(),
           category: [item.category_id],
           aiSummary: item.summary,
@@ -140,7 +140,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     const now = new Date()
     const hours = now.getHours()
     // Check if time is between 7:00 and 7:59
-    if (hours === 16) {
+    if (hours === 18) {
       setShowPodcastModal(true)
     }
   }, [])
