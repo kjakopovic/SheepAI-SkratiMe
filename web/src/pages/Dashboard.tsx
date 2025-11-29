@@ -7,9 +7,10 @@ import { TopicFilter } from '../components/ui/topic-filter'
 import { ArticleCard } from '../components/ui/article-card'
 import { ArticleDetail } from '../components/ui/article-detail'
 import { Chatbot } from '../components/ui/chatbot'
-import { mockArticles, categories } from '../data/mock-data'
+import { mockArticles } from '../data/mock-data'
 import { Article, Category } from '../types'
 import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm'
+import { api } from '../services/axios-wrapper'
 
 interface DashboardProps {
   onSettingsClick: () => void
@@ -20,6 +21,21 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
   const [showPodcastModal, setShowPodcastModal] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
+
+  const categories: Category[] = [
+    'cyber-security',
+    'data-breaches',
+    'malware-alerts',
+    'vulnerability-reports',
+    'privacy-updates',
+    'cloud-security',
+    'devsecops-news',
+    'software-patches',
+    'threat-intel',
+    'network-security',
+  ];
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -80,10 +96,80 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     const now = new Date()
     const hours = now.getHours()
     // Check if time is between 7:00 and 7:59
-    if (hours === 7) {
+    if (hours === 16) {
       setShowPodcastModal(true)
     }
   }, [])
+
+  const handlePlayPodcast = async () => {
+    if (isPlaying && audio) {
+      audio.pause()
+      setIsPlaying(false)
+      return
+    }
+
+    if (audio) {
+      audio.play()
+      setIsPlaying(true)
+      return
+    }
+
+    try {
+      // Check user email before calling API
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.email !== 'mikulec.marin52@gmail.com' || user.email !== 'hi@leaonard.solutions') {
+          console.log('User not authorized for TTS API');
+          return;
+        }
+      } else {
+        console.log('No user found in local storage');
+        return;
+      }
+
+      const text = "Good morning! Here is your daily cybersecurity briefing. Major data breaches were reported in the retail sector, and a new zero-day vulnerability affects popular cloud services."
+
+
+      // WARNING: Exposing API keys on the client side is a security risk.
+      // Ensure you restrict this key in Google Cloud Console to your domain.
+      const apiKey = import.meta.env.VITE_GOOGLE_TTS_API_KEY;
+
+      if (!apiKey) {
+        console.error("Google TTS API Key is missing. Please add VITE_GOOGLE_TTS_API_KEY to your .env file.");
+        return;
+      }
+
+      const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: { text },
+          voice: {
+            languageCode: 'en-US',
+            name: 'en-US-Chirp-HD-D'
+          },
+          audioConfig: { audioEncoding: 'MP3' },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.audioContent) {
+        const newAudio = new Audio(`data:audio/mp3;base64,${data.audioContent}`)
+        newAudio.onended = () => setIsPlaying(false)
+        setAudio(newAudio)
+        newAudio.play()
+        setIsPlaying(true)
+      } else {
+        console.error('No audio content received from Google TTS', data);
+      }
+    } catch (error) {
+      console.error('Failed to play podcast:', error)
+    }
+  }
 
   const handleToggleCategory = (category: Category) => {
     setSelectedCategories((prev) =>
@@ -108,7 +194,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
 
       <div className='md:fixed top-0 left-0 right-0'>
-        <SimpleHeader onSettingsClick={onSettingsClick} />
+        <SimpleHeader />
       </div>
 
 
@@ -238,25 +324,50 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
             </div>
 
             <div className="bg-gray-50 rounded-xl p-4 mb-6 flex items-center gap-4 border border-gray-100">
-              <button className="w-12 h-12 bg-morplo-blue-100 hover:opacity-90 text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0 pl-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  stroke="none"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
+              <button
+                onClick={handlePlayPodcast}
+                className="w-12 h-12 bg-morplo-blue-100 hover:opacity-90 text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0 pl-1 cursor-pointer"
+              >
+                {isPlaying ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    stroke="none"
+                    className="-ml-1" // Center the pause icon
+                  >
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    stroke="none"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                )}
               </button>
               <div className="flex-1">
-                <div className="h-1 bg-gray-200 rounded-full w-full mb-2">
-                  <div className="h-1 bg-morplo-blue-100 rounded-full w-1/3"></div>
-                </div>
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>01:23</span>
-                  <span>05:00</span>
+                <div className="font-medium text-gray-900">Daily Briefing</div>
+                <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                  {isPlaying ? (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-morplo-blue-100 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-morplo-blue-100"></span>
+                      </span>
+                      Playing now...
+                    </>
+                  ) : (
+                    'AI-Generated Audio Summary'
+                  )}
                 </div>
               </div>
             </div>

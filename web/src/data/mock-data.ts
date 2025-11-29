@@ -1,18 +1,5 @@
 import { Article, UserStats, Category } from '../types'
 
-export const categories: Category[] = [
-  'Malware',
-  'Phishing',
-  'AI Agents',
-  'Data Breach',
-  'Vulnerability',
-  'Social Engineering',
-  'Cloud Security',
-  'DevSecOps',
-  'Zero Trust',
-  'Ransomware',
-]
-
 export const mockArticles: Article[] = [
   {
     id: '1',

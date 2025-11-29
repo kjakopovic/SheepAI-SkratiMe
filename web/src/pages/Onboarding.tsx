@@ -58,6 +58,8 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const [userType, setUserType] = useState<UserType | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNotionModal, setShowNotionModal] = useState(false);
+  const [notionLink, setNotionLink] = useState('');
   
   const totalSteps = 3;
 
@@ -71,7 +73,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     );
   };
 
-  const submitRegistration = async (finalUserType: string, finalInterests: Category[]) => {
+  const submitRegistration = async (finalUserType: string, finalInterests: Category[], notionDbLink?: string) => {
     if (!registrationData) {
       console.error("No registration data found");
       return;
@@ -81,7 +83,8 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     try {
       await api.post('auth', '/register', {
         ...registrationData,
-        user_interests: [...finalInterests, finalUserType]
+        user_interests: [...finalInterests, finalUserType],
+        notion_link: notionDbLink
       });
       
       if (onComplete) {
@@ -101,9 +104,18 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     if (step < totalSteps) {
       setStep(step + 1);
     } else {
-      // Final step submission
-      submitRegistration(userType || 'Other', selectedInterests);
+      // Show modal before final submission
+      setShowNotionModal(true);
     }
+  };
+
+  const handleFinalSubmit = (skipNotion: boolean) => {
+    submitRegistration(
+      userType || 'Other', 
+      selectedInterests, 
+      skipNotion ? undefined : notionLink
+    );
+    setShowNotionModal(false);
   };
 
   const handleSkip = () => {
@@ -351,6 +363,53 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Notion Link Modal */}
+      {showNotionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl"
+          >
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Connect Notion</h3>
+              <p className="text-gray-600 text-sm">
+                Paste a link to your Notion database to automatically sync saved articles.
+              </p>
+            </div>
+
+            <input
+              type="text"
+              placeholder="https://notion.so/..."
+              value={notionLink}
+              onChange={(e) => setNotionLink(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-morplo-blue-100 focus:ring-2 focus:ring-morplo-blue-100/20 outline-none transition-all mb-6"
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleFinalSubmit(true)}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => handleFinalSubmit(false)}
+                className="flex-1 px-4 py-3 bg-morplo-blue-100 text-white rounded-xl font-medium hover:bg-opacity-90 transition-colors cursor-pointer"
+              >
+                Connect & Finish
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
