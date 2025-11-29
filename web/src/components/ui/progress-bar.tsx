@@ -7,9 +7,9 @@ interface ProgressBarProps {
 export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
   const progress = (currentStep / totalSteps) * 100;
   return (
-    <div className="w-full h-1 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+    <div className="w-full h-1 bg-morplo-gray-200 rounded-full overflow-hidden">
       <motion.div
-        className="h-full bg-[var(--accent-blue)] rounded-full"
+        className="h-full bg-morplo-blue-100 rounded-full"
         initial={{
           width: 0,
         }}

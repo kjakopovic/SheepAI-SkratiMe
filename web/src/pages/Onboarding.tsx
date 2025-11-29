@@ -75,7 +75,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     return true;
   };
   return (
-    <div className="min-h-screen bg-[var(--bg-secondary)] flex flex-col">
+    <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
       <div className="w-full px-6 pt-6">
         <div className="max-w-2xl mx-auto">
           <ProgressBar currentStep={step} totalSteps={totalSteps} />
@@ -105,9 +105,12 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 }}
                 className="text-center"
               >
-                <h1 className="text-4xl font-bold text-[var(--text-primary)] mb-4">Welcome to NewsHub</h1>
-                <p className="text-lg text-[var(--text-secondary)] mb-12 max-w-lg mx-auto">
-                  Let's personalize your experience. We'll help you discover news that matters to you.
+                <h1 className="text-4xl font-bold text-morplo-gray-900 mb-4">
+                  Welcome to NewsHub
+                </h1>
+                <p className="text-lg text-morplo-gray-600 mb-12 max-w-lg mx-auto">
+                  Let's personalize your experience. We'll help you discover
+                  news that matters to you.
                 </p>
                 <motion.button
                   onClick={handleNext}
@@ -117,7 +120,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                   whileTap={{
                     scale: 0.98,
                   }}
-                  className="px-8 py-4 bg-[var(--accent-blue)] text-white rounded-xl font-medium text-lg hover:bg-opacity-90 transition-colors"
+                  className="px-8 py-4 bg-morplo-blue-100 text-white rounded-xl font-medium text-lg hover:bg-opacity-90 transition-colors"
                 >
                   Get started
                 </motion.button>
@@ -144,8 +147,12 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 }}
               >
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-3">What describes you best?</h2>
-                  <p className="text-[var(--text-secondary)]">This helps us tailor content to your needs</p>
+                  <h2 className="text-3xl font-bold text-morplo-gray-900 mb-3">
+                    What describes you best?
+                  </h2>
+                  <p className="text-morplo-gray-600">
+                    This helps us tailor content to your needs
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 mb-8">
@@ -164,11 +171,11 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                         delay: index * 0.05,
                       }}
                       onClick={() => handleUserTypeSelect(type.value)}
-                      className={`p-5 rounded-xl text-left transition-all ${userType === type.value ? 'bg-[var(--accent-blue)] text-white shadow-md' : 'bg-white text-[var(--text-primary)] hover:shadow-md'}`}
+                      className={`p-5 rounded-xl text-left transition-all ${userType === type.value ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
                     >
                       <div className="font-semibold mb-1">{type.value}</div>
                       <div
-                        className={`text-sm ${userType === type.value ? 'text-white text-opacity-90' : 'text-[var(--text-secondary)]'}`}
+                        className={`text-sm ${userType === type.value ? 'text-white text-opacity-90' : 'text-morplo-gray-600'}`}
                       >
                         {type.description}
                       </div>
@@ -185,7 +192,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                     whileTap={{
                       scale: 0.98,
                     }}
-                    className="flex-1 px-6 py-3 bg-white text-[var(--text-secondary)] rounded-xl font-medium hover:bg-[var(--bg-tertiary)] transition-colors"
+                    className="flex-1 px-6 py-3 bg-white text-morplo-gray-600 rounded-xl font-medium hover:bg-morplo-gray-200 transition-colors"
                   >
                     Skip
                   </motion.button>
@@ -206,7 +213,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                           }
                         : {}
                     }
-                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() ? 'bg-[var(--accent-blue)] text-white hover:bg-opacity-90' : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'}`}
+                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
                   >
                     Continue
                   </motion.button>
@@ -234,8 +241,10 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 }}
               >
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-3">Choose your interests</h2>
-                  <p className="text-[var(--text-secondary)]">
+                  <h2 className="text-3xl font-bold text-morplo-gray-900 mb-3">
+                    Choose your interests
+                  </h2>
+                  <p className="text-morplo-gray-600">
                     Select topics you'd like to follow (choose at least one)
                   </p>
                 </div>
@@ -256,7 +265,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                         delay: index * 0.04,
                       }}
                       onClick={() => handleInterestToggle(category)}
-                      className={`p-4 rounded-xl font-medium transition-all ${selectedInterests.includes(category) ? 'bg-[var(--accent-blue)] text-white shadow-md' : 'bg-white text-[var(--text-primary)] hover:shadow-md'}`}
+                      className={`p-4 rounded-xl font-medium transition-all ${selectedInterests.includes(category) ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
                     >
                       {category}
                     </motion.button>
@@ -272,7 +281,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                     whileTap={{
                       scale: 0.98,
                     }}
-                    className="flex-1 px-6 py-3 bg-white text-[var(--text-secondary)] rounded-xl font-medium hover:bg-[var(--bg-tertiary)] transition-colors"
+                    className="flex-1 px-6 py-3 bg-white text-morplo-gray-600 rounded-xl font-medium hover:bg-morplo-gray-200 transition-colors"
                   >
                     Skip
                   </motion.button>
@@ -293,7 +302,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                           }
                         : {}
                     }
-                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() ? 'bg-[var(--accent-blue)] text-white hover:bg-opacity-90' : 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'}`}
+                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
                   >
                     Complete setup
                   </motion.button>

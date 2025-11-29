@@ -7,19 +7,19 @@ interface ArticleCardProps {
 }
 export function ArticleCard({ article, onClick }: ArticleCardProps) {
   const getRelevanceColor = (score: number) => {
-    if (score >= 85) return 'var(--accent-green)'
-    if (score >= 70) return 'var(--accent-amber)'
-    return 'var(--text-tertiary)'
+    if (score >= 85) return 'var(--color-morplo-green-100)'
+    if (score >= 70) return 'var(--color-morplo-yellow-400)'
+    return 'var(--color-morplo-gray-600)'
   }
   const relevanceColor = getRelevanceColor(article.relevanceScore)
   return (
     <article
       onClick={onClick}
-      className="bg-white rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer"
     >
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {article.imageUrl && (
-          <div className="w-40 h-28 rounded-lg overflow-hidden flex-shrink-0">
+          <div className="w-full h-48 md:w-40 md:h-28 rounded-lg overflow-hidden flex-shrink-0">
             <img
               src={article.imageUrl}
               alt=""
@@ -29,24 +29,24 @@ export function ArticleCard({ article, onClick }: ArticleCardProps) {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-4 mb-2">
-            <h3 className="text-lg font-semibold text-[var(--text-primary)] line-clamp-2 leading-snug">
+            <h3 className="text-lg font-semibold text-morplo-gray-900 line-clamp-2 leading-snug">
               {article.title}
             </h3>
             {article.consumed && (
-              <CheckCircleIcon className="w-5 h-5 text-[var(--accent-green)] flex-shrink-0" />
+              <CheckCircleIcon className="w-5 h-5 text-morplo-green-100 flex-shrink-0" />
             )}
           </div>
-          <div className="flex items-center gap-2 mb-3 text-sm text-[var(--text-secondary)]">
+          <div className="flex items-center gap-2 mb-3 text-sm text-morplo-gray-700">
             <span>{article.source}</span>
             <span>•</span>
             <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
           </div>
-          <p className="text-[var(--text-secondary)] mb-4 line-clamp-2 leading-relaxed">
+          <p className="text-morplo-gray-700 mb-4 line-clamp-2 leading-relaxed">
             {article.aiSummary}
           </p>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--text-tertiary)]">
+              <span className="text-xs text-morplo-gray-600">
                 Relevance
               </span>
               <div
@@ -59,7 +59,7 @@ export function ArticleCard({ article, onClick }: ArticleCardProps) {
                 {article.relevanceScore}%
               </div>
             </div>
-            <span className="text-sm text-[var(--accent-blue)]">
+            <span className="text-sm text-morplo-blue-100">
               Read more →
             </span>
           </div>

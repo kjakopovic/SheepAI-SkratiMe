@@ -7,9 +7,11 @@ interface SimpleHeaderProps {
 }
 export const SimpleHeader = ({ onSettingsClick, showSettings = true }: SimpleHeaderProps) => {
   return (
-    <header className="bg-white border-b border-[var(--border-subtle)] px-6 py-4">
+    <header className="bg-white border-b border-[var(--border-subtle)] px-4 md:px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[var(--text-primary)]">NewsHub</h1>
+        <h1 className="text-xl font-semibold text-[var(--text-primary)]">
+          Skrati.Me
+        </h1>
 
         {showSettings && onSettingsClick && (
           <motion.button
@@ -20,10 +22,10 @@ export const SimpleHeader = ({ onSettingsClick, showSettings = true }: SimpleHea
             whileTap={{
               scale: 0.95,
             }}
-            className="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+            className="p-2 rounded-lg hover:bg-morplo-gray-130 transition-colors"
             aria-label="Settings"
           >
-            <SettingsIcon className="w-5 h-5 text-[var(--text-secondary)]" />
+            <SettingsIcon className="w-5 h-5 text-morplo-gray-600" />
           </motion.button>
         )}
       </div>
