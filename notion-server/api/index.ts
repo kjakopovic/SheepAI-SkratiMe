@@ -8,32 +8,14 @@ import * as cheerio from "cheerio";
 
 const app = new Hono();
 
-// CORS configuration - allow localhost for development
+// CORS configuration - allow all origins
 app.use(
   "/*",
   cors({
-    origin: (origin) => {
-      console.log("Request origin:", origin);
-      // Allow all localhost origins for development
-      if (
-        !origin ||
-        origin.includes("localhost") ||
-        origin.includes("127.0.0.1")
-      ) {
-        return origin || "*";
-      }
-      // Allow your production domains (update these with your actual domains)
-      const allowedOrigins = [
-        "https://skrati-me.com",
-        "https://your-vercel-app.vercel.app",
-      ];
-
-      // If origin is in allowed list, return it, otherwise return first allowed origin
-      return "*";
-    },
+    origin: "*",
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposeHeaders: ["Content-Length", "Content-Type"],
     maxAge: 86400,
   }),
 );
