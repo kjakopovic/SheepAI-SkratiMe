@@ -4,11 +4,10 @@ import { SimpleHeader } from '../components/ui/simple-header'
 import { TopicFilter } from '../components/ui/topic-filter'
 import { ArticleCard } from '../components/ui/article-card'
 import { ArticleDetail } from '../components/ui/article-detail'
-import { Chatbot } from '../components/ui/chatbot'
 import { mockArticles } from '../data/mock-data'
 import { Article, Category } from '../types'
 import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm'
-import { api } from '../services/axios-wrapper'
+import { exportToNotion} from '@/services/notion'
 
 interface DashboardProps {
   onSettingsClick: () => void
