@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
+// @ts-ignore
+import Aurora from '../components/Aurora';
 
 interface RegisterPageProps {
   onRegister?: () => void;
@@ -28,12 +30,18 @@ export const Register = ({ onRegister, onLoginClick }: RegisterPageProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-morplo-gray-130 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-morplo-gray-130 flex items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute inset-0 z-0 opacity-30 pointer-events-none">
+        <Aurora
+          colorStops={['#00E5FF', '#2979FF', '#00E5FF']}
+          speed={0.5}
+        />
+      </div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-morplo-gray-900 mb-2">
