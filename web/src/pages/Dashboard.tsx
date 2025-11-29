@@ -132,7 +132,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     }
 
     fetchNews()
-    /* sendBriefingEmail(); */
+    sendBriefingEmail();
 
   }, [navigate])
 
