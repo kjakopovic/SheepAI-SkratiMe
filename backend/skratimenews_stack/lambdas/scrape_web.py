@@ -4,8 +4,12 @@ import os
 import re
 import uuid
 
+from bs4 import BeautifulSoup
+import requests
+
 import boto3
 import feedparser
+
 from aws_lambda_powertools import Logger
 
 logger = Logger(service="ScrapeWebLambda", level="INFO")
@@ -84,7 +88,7 @@ def lambda_handler(event, context):
             "news_link": entry.get("link", "No Link"),
             "published_at": published_dt_utc.isoformat() if published_dt_utc else None,
             "author": entry.get("author", "Unknown Author"),
-            "full_article": "",
+            "full_article": _build_full_article(entry.get("link", "")),
         }
 
         try:
@@ -240,3 +244,30 @@ def _extract_image(links):
             return link.get("href")
     logger.info("No image link found for entry")
     return None
+
+
+def _build_full_article(url):
+    if url == "":
+        return ""
+
+    # Fetch the HTML content
+    response = requests.get(url)
+    response.raise_for_status()
+
+    # Parse HTML
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    # Get the article body div
+    article_div = soup.find("div", id="articlebody")
+
+    if not article_div:
+        return {"statusCode": 404, "body": json.dumps("Article body not found")}
+
+    # Remove unwanted divs
+    for div in article_div.find_all("div", class_=["dog_two", "separator"]):
+        div.decompose()
+
+    # Extract text
+    article_text = article_div.get_text(separator="\n", strip=True)
+
+    return article_text

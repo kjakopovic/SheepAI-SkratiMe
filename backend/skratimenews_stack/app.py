@@ -276,6 +276,7 @@ class SkratimenewsStack(Stack):
             "RssFetcherLambda",
             runtime=_lambda.Runtime.PYTHON_3_12,
             handler="scrape_web.lambda_handler",
+            timeout=Duration.seconds(600),
             code=_lambda.Code.from_asset(
                 os.path.join("lambdas"),
                 bundling={
@@ -314,7 +315,7 @@ class SkratimenewsStack(Stack):
         rule = events.Rule(
             self,
             "RssScheduleRule",
-            schedule=events.Schedule.rate(duration=Duration.minutes(2)),
+            schedule=events.Schedule.rate(duration=Duration.minutes(30)),
         )
 
         rule.add_target(targets.LambdaFunction(rss_lambda))
