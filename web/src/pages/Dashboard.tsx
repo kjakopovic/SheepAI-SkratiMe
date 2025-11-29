@@ -9,6 +9,7 @@ import { Article, Category } from '../types'
 interface DashboardProps {
   onSettingsClick: () => void
 }
+// eslint-disable-next-line react/function-component-definition
 export function Dashboard({ onSettingsClick }: DashboardProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
@@ -27,16 +28,22 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   })
   return (
     <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
-      <SimpleHeader onSettingsClick={onSettingsClick} />
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        <TopicFilter
-          categories={categories}
-          selectedCategories={selectedCategories}
-          onToggleCategory={handleToggleCategory}
-        />
+      <div className='md:fixed top-0 left-0 right-0'>
+        <SimpleHeader onSettingsClick={onSettingsClick} />
+      </div>
 
-        <main className="flex-1 overflow-y-auto scrollbar-thin">
+
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden ">
+        <div className='md:h-screen md:fixed top-18'>
+          <TopicFilter
+            categories={categories}
+            selectedCategories={selectedCategories}
+            onToggleCategory={handleToggleCategory}
+          />
+        </div>
+
+        <main className="flex-1 overflow-y-auto scrollbar-thin md:mt-14">
           <div className="max-w-4xl mx-auto py-6 px-4 md:py-12 md:px-6">
             {filteredArticles.length === 0 ? (
               <div className="bg-white rounded-xl p-8 md:p-16 text-center">

@@ -6,27 +6,37 @@ interface ArticleDetailProps {
   article: Article
   onClose: () => void
 }
-export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
+export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }) => {
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [])
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-end">
       <div
-        className="absolute inset-0 bg-black bg-opacity-20"
+        className="absolute inset-0 bg-black/20 blur-in-2xl"
+        role="button"
+        tabIndex={0}
+        aria-label="Close overlay"
         onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onClose();
+          }
+        }}
       />
 
-      <div className="relative w-full max-w-4xl h-full bg-[var(--bg-secondary)] overflow-y-auto scrollbar-thin animate-slide-in">
-        <div className="sticky top-0 z-10 bg-white border-b border-[var(--border-subtle)] px-4 md:px-8 py-4">
+      <div className="relative w-full max-w-4xl h-full bg-white overflow-y-auto scrollbar-thin animate-slide-in">
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-300 px-4 md:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
+                type="button"
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-morplo-gray-130 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 <XIcon className="w-5 h-5 text-morplo-gray-600" />
               </button>
@@ -56,7 +66,7 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="col-span-1 md:col-span-2 space-y-6">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
+                <h1 className="text-2xl md:text-3xl font-bold text-(--text-primary) mb-6 leading-tight">
                   {article.title}
                 </h1>
 
@@ -107,5 +117,5 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
