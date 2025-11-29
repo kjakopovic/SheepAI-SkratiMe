@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  notion-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notion-server
+    ports:
+      - "3001:3001"
+    environment:
+      - NOTION_KEY=${NOTION_KEY}
+      - NOTION_SUMMARY_PAGE_ID=${NOTION_SUMMARY_PAGE_ID}
+      - PORT=3001
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
