@@ -9,8 +9,8 @@ import { useUserContext } from '@/context/UserContext';
 
 import config from '@/config';
 
-import { paths } from '@/common/constants';
-import { ServerError } from '@/common/errors/ServerError';
+import { paths } from '@/old-template/common/constants';
+import { ServerError } from '@/old-template/common/errors/ServerError';
 
 const useFetchWrapper = () => {
   const navigate = useNavigate();

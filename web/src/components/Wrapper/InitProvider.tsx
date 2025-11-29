@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 
 import { UserContext } from '@/context/UserContext';
 
-import { useAuthActions } from '@/features/auth';
+import { useAuthActions } from '@/old-template/features/auth';
 
 import { User } from '@/models/user';
 

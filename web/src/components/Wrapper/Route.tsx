@@ -5,9 +5,9 @@ import { Navigate } from 'react-router-dom';
 
 import { useUserContext } from '@/context/UserContext';
 
-import { paths } from '@/common/constants';
+import { paths } from '@/old-template/common/constants';
 
-import Authorization from '@/features/auth/components/Wrapper';
+import Authorization from '@/old-template/features/auth/components/Wrapper';
 
 const Route = ({
   component: Component,

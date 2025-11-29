@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 
 import { useUserContext } from '@/context/UserContext';
 
-import { paths } from '@/common/constants';
+import { paths } from '@/old-template/common/constants';
 
 import { useFetchWrapper } from '@/hooks';
 

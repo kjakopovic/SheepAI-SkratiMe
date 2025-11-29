@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { ServerError } from '@/common/errors/ServerError';
+import { ServerError } from '@/old-template/common/errors/ServerError';
 
 import { useToast } from '@/hooks';
 

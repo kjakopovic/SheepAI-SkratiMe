@@ -34,7 +34,7 @@ class ErrorBoundary extends Component<Props, State> {
     if (hasError) {
       return (
         <div>
-          Something went wrong {error?.message} {errorInfo?.digest}
+          Something went wrong {error?.message}
         </div>
       );
     }

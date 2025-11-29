@@ -1,9 +1,9 @@
-import { paths } from '@/common/constants';
+import { paths } from '@/old-template/common/constants';
 
-import { lazyImport } from '@/utils/lazyImport';
+import { lazyImport } from '@/lib/lazyImport';
 
-const { Login } = lazyImport(() => import('@/features/auth'), 'Login');
-const { Dashboard } = lazyImport(() => import('@/features/dashboard'), 'Dashboard');
+const { Login } = lazyImport(() => import('@/old-template/features/auth'), 'Login');
+const { Dashboard } = lazyImport(() => import('@/old-template/features/dashboard'), 'Dashboard');
 
 const routes: Route[] = [
   {
