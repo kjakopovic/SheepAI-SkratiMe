@@ -222,53 +222,54 @@ class SkratimenewsStack(Stack):
         )
 
         # === SQS Queue ===
-        # rss_queue = sqs.Queue(
-        #     self,
-        #     "RssNewsQueue",
-        #     visibility_timeout=Duration.seconds(120),
-        # )
+        rss_queue = sqs.Queue(
+            self,
+            "RssNewsQueue",
+            visibility_timeout=Duration.seconds(120),
+        )
 
-        # categorizer_lambda = _lambda.Function(
-        #     self,
-        #     "CategorizerLambda",
-        #     runtime=_lambda.Runtime.PYTHON_3_12,
-        #     handler="categorizer.lambda_handler",
-        #     code=_lambda.Code.from_asset(
-        #         os.path.join("lambdas"),
-        #         bundling={
-        #             "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
-        #             "command": [
-        #                 "bash",
-        #                 "-c",
-        #                 "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
-        #             ],
-        #         },
-        #     ),
-        #     environment={
-        #         "NEWS_TABLE_NAME": table.table_name,
-        #         "CATEGORIES_TABLE_NAME": categories_table.table_name,
-        #     },
-        # )
+        categorizer_lambda = _lambda.Function(
+            self,
+            "CategorizerLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="categorizer.lambda_handler",
+            timeout=Duration.seconds(600),
+            code=_lambda.Code.from_asset(
+                os.path.join("lambdas"),
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "NEWS_TABLE_NAME": table.table_name,
+                "CATEGORIES_TABLE_NAME": categories_table.table_name,
+            },
+        )
 
-        # categorizer_lambda.add_event_source_mapping(
-        #     "CategorizerQueueMapping",
-        #     event_source_arn=rss_queue.queue_arn,
-        #     batch_size=10,
-        #     enabled=True,
-        # )
+        categorizer_lambda.add_event_source_mapping(
+            "CategorizerQueueMapping",
+            event_source_arn=rss_queue.queue_arn,
+            batch_size=10,
+            enabled=True,
+        )
 
-        # categorizer_lambda.add_to_role_policy(
-        #     iam.PolicyStatement(
-        #         actions=["bedrock:InvokeModel"],
-        #         resources=[
-        #             f"arn:aws:bedrock:{self.region}::foundation-model/{BEDROCK_MODEL_ID}"
-        #         ],
-        #     )
-        # )
+        categorizer_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock:InvokeModel"],
+                resources=[
+                    f"arn:aws:bedrock:{self.region}::foundation-model/{BEDROCK_MODEL_ID}"
+                ],
+            )
+        )
 
-        # rss_queue.grant_consume_messages(categorizer_lambda)
-        # categories_table.grant_read_write_data(categorizer_lambda)
-        # table.grant_read_write_data(categorizer_lambda)
+        rss_queue.grant_consume_messages(categorizer_lambda)
+        categories_table.grant_read_write_data(categorizer_lambda)
+        table.grant_read_write_data(categorizer_lambda)
 
         # === RSS Lambda ===
         rss_lambda = _lambda.Function(
@@ -293,7 +294,7 @@ class SkratimenewsStack(Stack):
                 "TABLE_NAME": fetch_table.table_name,
                 "NEWS_TABLE_NAME": table.table_name,
                 "CATEGORIES_TABLE_NAME": categories_table.table_name,
-                # "RSS_QUEUE_URL": rss_queue.queue_url,
+                "RSS_QUEUE_URL": rss_queue.queue_url,
             },
         )
 
@@ -309,7 +310,7 @@ class SkratimenewsStack(Stack):
                 ],
             )
         )
-        # rss_queue.grant_send_messages(rss_lambda)
+        rss_queue.grant_send_messages(rss_lambda)
 
         # === EventBridge Rule ===
         rule = events.Rule(
