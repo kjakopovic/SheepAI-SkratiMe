@@ -36,6 +36,21 @@ class SkratimenewsModel(Model):
 def handler(event, context):
     logger.info("Received event", extra={"event": event})
 
+    # Handle CORS preflight
+    if event.get("httpMethod") == "OPTIONS":
+        logger.info("OPTIONS preflight request")
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": event.get("headers", {}).get(
+                    "origin", "*"
+                ),
+                "Access-Control-Allow-Methods": "OPTIONS,POST",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization",
+            },
+            "body": json.dumps({"message": "OK"}),
+        }
+
     try:
         # Extract user ID from Cognito authorizer context
         user_id = event["requestContext"]["authorizer"]["claims"]["sub"]
@@ -43,32 +58,43 @@ def handler(event, context):
 
         # Query all bookmarks for this user
         bookmarks = list(UserBookmarkModel.query(user_id))
-        logger.info(f"Found {len(bookmarks)} bookmarks", extra={"user_id": user_id, "count": len(bookmarks)})
+        logger.info(
+            f"Found {len(bookmarks)} bookmarks",
+            extra={"user_id": user_id, "count": len(bookmarks)},
+        )
 
         # Get news details for each bookmark
         bookmarked_news = []
         for bookmark in bookmarks:
             try:
                 news_item = SkratimenewsModel.get(bookmark.news_id)
-                bookmarked_news.append({
-                    "id": news_item.id,
-                    "title": news_item.title,
-                    "summary": news_item.summary,
-                    "category_id": news_item.category_id,
-                    "picture_url": news_item.picture_url,
-                    "bookmarked_at": bookmark.created_at.isoformat() if bookmark.created_at else None,
-                })
+                bookmarked_news.append(
+                    {
+                        "id": news_item.id,
+                        "title": news_item.title,
+                        "summary": news_item.summary,
+                        "category_id": news_item.category_id,
+                        "picture_url": news_item.picture_url,
+                        "bookmarked_at": (
+                            bookmark.created_at.isoformat()
+                            if bookmark.created_at
+                            else None
+                        ),
+                    }
+                )
             except SkratimenewsModel.DoesNotExist:
-                logger.warning(f"News item not found for bookmark", extra={"news_id": bookmark.news_id})
+                logger.warning(
+                    f"News item not found for bookmark",
+                    extra={"news_id": bookmark.news_id},
+                )
                 # Skip this bookmark if news was deleted
                 continue
 
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "bookmarks": bookmarked_news,
-                "count": len(bookmarked_news)
-            }),
+            "body": json.dumps(
+                {"bookmarks": bookmarked_news, "count": len(bookmarked_news)}
+            ),
         }
 
     except Exception as e:

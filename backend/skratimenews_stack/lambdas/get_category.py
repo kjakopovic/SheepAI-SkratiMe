@@ -7,6 +7,11 @@ from aws_lambda_powertools import Logger
 
 CATEGORIES_TABLE_NAME = os.environ["CATEGORIES_TABLE_NAME"]
 AWS_REGION = "eu-central-1"
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+}
 
 
 class CategoriesModel(Model):
@@ -25,6 +30,15 @@ logger = Logger(service="CategoryGetLambda")
 def handler(event, context):
     logger.info("Received event", extra={"event": event})
 
+    # Handle CORS preflight
+    if event.get("httpMethod") == "OPTIONS":
+        logger.info("OPTIONS preflight request")
+        return {
+            "statusCode": 200,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"message": "OK"}),
+        }
+
     try:
         query_params = event.get("queryStringParameters") or {}
 
@@ -33,7 +47,11 @@ def handler(event, context):
         if single_id:
             logger.debug("Fetching single category by ID", extra={"id": single_id})
             category = CategoriesModel.get(single_id)
-            return {"statusCode": 200, "body": json.dumps(category.attribute_values)}
+            return {
+                "statusCode": 200,
+                "headers": CORS_HEADERS,
+                "body": json.dumps(category.attribute_values),
+            }
 
         # Multiple IDs lookup
         ids_param = query_params.get("ids")
@@ -53,7 +71,11 @@ def handler(event, context):
             for missing_id in missing_ids:
                 logger.warning("Category not found", extra={"id": missing_id})
 
-            return {"statusCode": 200, "body": json.dumps({"items": categories})}
+            return {
+                "statusCode": 200,
+                "headers": CORS_HEADERS,
+                "body": json.dumps({"items": categories}),
+            }
 
         categories = []
 
@@ -65,19 +87,32 @@ def handler(event, context):
             "items": categories,
         }
 
-        return {"statusCode": 200, "body": json.dumps(response_body)}
+        return {
+            "statusCode": 200,
+            "headers": CORS_HEADERS,
+            "body": json.dumps(response_body),
+        }
 
     except CategoriesModel.DoesNotExist:
         logger.warning("Category not found")
-        return {"statusCode": 404, "body": json.dumps({"error": "Category not found"})}
+        return {
+            "statusCode": 404,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"error": "Category not found"}),
+        }
 
     except json.JSONDecodeError as e:
         logger.warning("Invalid JSON in last_evaluated_key", extra={"error": str(e)})
         return {
             "statusCode": 400,
+            "headers": CORS_HEADERS,
             "body": json.dumps({"error": "Invalid pagination token"}),
         }
 
     except Exception as e:
         logger.error("Unhandled exception", extra={"error": str(e)})
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        return {
+            "statusCode": 500,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"error": str(e)}),
+        }

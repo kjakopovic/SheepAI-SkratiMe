@@ -10,6 +10,11 @@ from pynamodb.attributes import UnicodeAttribute
 ITEMS_PER_PAGE = 10
 TABLE_NAME = os.environ["TABLE_NAME"]
 AWS_REGION = "eu-central-1"
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+}
 
 
 class CategoryIndex(GlobalSecondaryIndex):
@@ -50,6 +55,15 @@ CORS_HEADERS = {
 
 def handler(event, context):
     logger.info("Received event", extra={"event": event})
+
+    # Handle CORS preflight
+    if event.get("httpMethod") == "OPTIONS":
+        logger.info("OPTIONS preflight request")
+        return {
+            "statusCode": 200,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"message": "OK"}),
+        }
 
     try:
         query_params = event.get("queryStringParameters") or {}

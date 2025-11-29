@@ -33,50 +33,13 @@ class SkratimenewsStack(Stack):
         )
 
         # === DynamoDB Table for User Bookmarks ===
-        bookmarks_table = dynamodb.Table(
-            self,
-            "UserBookmarksTable",
-            partition_key={"name": "user_id", "type": dynamodb.AttributeType.STRING},
-            sort_key={"name": "news_id", "type": dynamodb.AttributeType.STRING},
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            removal_policy=RemovalPolicy.DESTROY,
-        )
-
-        # === S3 Bucket for Audio Files ===
-        audio_bucket = s3.Bucket(
-            self,
-            "SkratimenewsAudioBucket",
-            # Bucket name will be auto-generated with account ID
-            bucket_name=None,
-            # Enable versioning for data protection
-            versioned=False,
-            # Encryption at rest
-            encryption=s3.BucketEncryption.S3_MANAGED,
-            # Block all public access - use presigned URLs instead
-            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-            # Lifecycle rule: delete audio files after 7 days to save costs
-            lifecycle_rules=[
-                s3.LifecycleRule(
-                    id="DeleteOldAudioFiles",
-                    enabled=True,
-                    expiration=Duration.days(7),
-                    # Also clean up incomplete multipart uploads
-                    abort_incomplete_multipart_upload_after=Duration.days(1),
-                )
-            ],
-            # CORS configuration for frontend access
-            cors=[
-                s3.CorsRule(
-                    allowed_methods=[s3.HttpMethods.GET, s3.HttpMethods.HEAD],
-                    allowed_origins=["*"],  # Adjust for production
-                    allowed_headers=["*"],
-                    max_age=3000,
-                )
-            ],
-            # Removal policy for development
-            removal_policy=RemovalPolicy.DESTROY,
-            auto_delete_objects=True,
-        )
+        # bookmarks_table = dynamodb.Table(
+        #     self,
+        #     "UserBookmarksTable",
+        #     partition_key={"name": "user_id", "type": dynamodb.AttributeType.STRING},
+        #     billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+        #     removal_policy=RemovalPolicy.DESTROY,
+        # )
 
         # === GSI: news-category-index ===
         table.add_global_secondary_index(
@@ -217,6 +180,7 @@ class SkratimenewsStack(Stack):
         categories_table.grant_read_data(get_category_lambda)
 
         # Add methods to API Gateway with Cognito authorizer
+
         categories_resource.add_method(
             "POST",
             apigateway.LambdaIntegration(create_category_lambda),
@@ -227,8 +191,6 @@ class SkratimenewsStack(Stack):
         categories_resource.add_method(
             "GET",
             apigateway.LambdaIntegration(get_category_lambda),
-            authorizer=auth,
-            authorization_type=apigateway.AuthorizationType.COGNITO,
         )
 
         items_resource.add_method(
@@ -260,53 +222,53 @@ class SkratimenewsStack(Stack):
         )
 
         # === SQS Queue ===
-        rss_queue = sqs.Queue(
-            self,
-            "RssNewsQueue",
-            visibility_timeout=Duration.seconds(120),
-        )
+        # rss_queue = sqs.Queue(
+        #     self,
+        #     "RssNewsQueue",
+        #     visibility_timeout=Duration.seconds(120),
+        # )
 
-        categorizer_lambda = _lambda.Function(
-            self,
-            "CategorizerLambda",
-            runtime=_lambda.Runtime.PYTHON_3_12,
-            handler="categorizer.lambda_handler",
-            code=_lambda.Code.from_asset(
-                os.path.join("lambdas"),
-                bundling={
-                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
-                    "command": [
-                        "bash",
-                        "-c",
-                        "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
-                    ],
-                },
-            ),
-            environment={
-                "NEWS_TABLE_NAME": table.table_name,
-                "CATEGORIES_TABLE_NAME": categories_table.table_name,
-            },
-        )
+        # categorizer_lambda = _lambda.Function(
+        #     self,
+        #     "CategorizerLambda",
+        #     runtime=_lambda.Runtime.PYTHON_3_12,
+        #     handler="categorizer.lambda_handler",
+        #     code=_lambda.Code.from_asset(
+        #         os.path.join("lambdas"),
+        #         bundling={
+        #             "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+        #             "command": [
+        #                 "bash",
+        #                 "-c",
+        #                 "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+        #             ],
+        #         },
+        #     ),
+        #     environment={
+        #         "NEWS_TABLE_NAME": table.table_name,
+        #         "CATEGORIES_TABLE_NAME": categories_table.table_name,
+        #     },
+        # )
 
-        categorizer_lambda.add_event_source_mapping(
-            "CategorizerQueueMapping",
-            event_source_arn=rss_queue.queue_arn,
-            batch_size=10,
-            enabled=True,
-        )
+        # categorizer_lambda.add_event_source_mapping(
+        #     "CategorizerQueueMapping",
+        #     event_source_arn=rss_queue.queue_arn,
+        #     batch_size=10,
+        #     enabled=True,
+        # )
 
-        categorizer_lambda.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=["bedrock:InvokeModel"],
-                resources=[
-                    f"arn:aws:bedrock:{self.region}::foundation-model/{BEDROCK_MODEL_ID}"
-                ],
-            )
-        )
+        # categorizer_lambda.add_to_role_policy(
+        #     iam.PolicyStatement(
+        #         actions=["bedrock:InvokeModel"],
+        #         resources=[
+        #             f"arn:aws:bedrock:{self.region}::foundation-model/{BEDROCK_MODEL_ID}"
+        #         ],
+        #     )
+        # )
 
-        rss_queue.grant_consume_messages(categorizer_lambda)
-        categories_table.grant_read_write_data(categorizer_lambda)
-        table.grant_read_write_data(categorizer_lambda)
+        # rss_queue.grant_consume_messages(categorizer_lambda)
+        # categories_table.grant_read_write_data(categorizer_lambda)
+        # table.grant_read_write_data(categorizer_lambda)
 
         # === RSS Lambda ===
         rss_lambda = _lambda.Function(
@@ -328,13 +290,25 @@ class SkratimenewsStack(Stack):
             environment={
                 "RSS_URL": "https://feeds.feedburner.com/TheHackersNews",
                 "TABLE_NAME": fetch_table.table_name,
-                "RSS_QUEUE_URL": rss_queue.queue_url,
+                "NEWS_TABLE_NAME": table.table_name,
+                "CATEGORIES_TABLE_NAME": categories_table.table_name,
+                # "RSS_QUEUE_URL": rss_queue.queue_url,
             },
         )
 
         # Grant permissions
         fetch_table.grant_read_write_data(rss_lambda)
-        rss_queue.grant_send_messages(rss_lambda)
+        table.grant_read_write_data(rss_lambda)
+        categories_table.grant_read_write_data(rss_lambda)
+        rss_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock:InvokeModel"],
+                resources=[
+                    f"arn:aws:bedrock:{self.region}::foundation-model/{BEDROCK_MODEL_ID}"
+                ],
+            )
+        )
+        # rss_queue.grant_send_messages(rss_lambda)
 
         # === EventBridge Rule ===
         rule = events.Rule(
