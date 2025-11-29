@@ -57,7 +57,7 @@ export const Login = ({ onLogin }: LoginPageProps) => {
       >
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-morplo-gray-900 mb-2">
-            Welcome to NewsHub
+            Welcome to SkratiMe
           </h1>
           <p className="text-morplo-gray-600">
             Stay informed with personalized news

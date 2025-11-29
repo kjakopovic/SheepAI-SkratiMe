@@ -6,10 +6,10 @@ import Aurora from '../components/Aurora';
 
 interface RegisterPageProps {
   onRegister?: () => void;
-  onLoginClick: () => void;
+  onLoginClick?: () => void;
 }
 
-export const Register = ({ onRegister, onLoginClick }: RegisterPageProps) => {
+export const Register = ({ onRegister }: RegisterPageProps) => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -122,7 +122,7 @@ export const Register = ({ onRegister, onLoginClick }: RegisterPageProps) => {
             <p className="text-sm text-morplo-gray-600">
               Already have an account?{' '}
               <button 
-                onClick={onLoginClick}
+                onClick={() => navigate('/login')}
                 className="text-morplo-blue-100 hover:underline font-medium cursor-pointer"
             > Sign in </button>
             </p>
