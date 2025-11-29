@@ -41,6 +41,10 @@ class SkratimenewsModel(Model):
     category_index = CategoryIndex()
 
     picture_url = UnicodeAttribute(null=True)
+    news_link = UnicodeAttribute(null=True)
+    published_at = UnicodeAttribute(null=True)
+    author = UnicodeAttribute(null=True)
+    full_article = UnicodeAttribute(null=True)
 
 
 logger = Logger(service="SkratimenewsGetLambda")
