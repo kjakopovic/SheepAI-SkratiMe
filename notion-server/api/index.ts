@@ -23,10 +23,7 @@ app.use(
         return origin || "*";
       }
       // Allow your production domains (update these with your actual domains)
-      const allowedOrigins = [
-        "https://your-production-domain.com",
-        "https://your-vercel-app.vercel.app",
-      ];
+      const allowedOrigins = ["https://skrati-me.com"];
 
       // If origin is in allowed list, return it, otherwise return first allowed origin
       return allowedOrigins.includes(origin) ? origin : "*";
@@ -181,7 +178,7 @@ function generateEmailHTML(data: {
   const relatedItemsHTML = relatedArticles
     .map(
       (article, index) => `
-    <div class="relevant-item" ${index === relatedArticles.length - 1 ? 'style="border-bottom: 0"' : ''}>
+    <div class="relevant-item" ${index === relatedArticles.length - 1 ? 'style="border-bottom: 0"' : ""}>
       <div class="thumb">
         <a href="${article.url}">
           <img src="${article.image}" alt="${article.title}" />
@@ -193,13 +190,13 @@ function generateEmailHTML(data: {
         </a>
         <div class="ri-meta">
           ${article.summary} &nbsp;•&nbsp;
-          <span class="muted">${article.author || 'The Hacker News'}</span>
+          <span class="muted">${article.author || "The Hacker News"}</span>
         </div>
       </div>
     </div>
-  `
+  `,
     )
-    .join('');
+    .join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -228,7 +225,7 @@ function generateEmailHTML(data: {
               <p class="muted" style="margin-bottom:8px">${breakingArticle.summary}</p>
               <div style="display:flex;gap:8px;align-items:center">
                 <a href="${breakingArticle.url}" class="btn">Read full story</a>
-                <span style="font-size:13px;color:#64748b">&nbsp;•&nbsp;${breakingArticle.source || 'The Hacker News'}</span>
+                <span style="font-size:13px;color:#64748b">&nbsp;•&nbsp;${breakingArticle.source || "The Hacker News"}</span>
               </div>
             </div>
           </a>
@@ -266,8 +263,11 @@ app.post("/email/send", async (c) => {
 
     if (!to || !breakingArticle || !relatedArticles) {
       return c.json(
-        { error: "Missing required fields: to, breakingArticle, relatedArticles" },
-        400
+        {
+          error:
+            "Missing required fields: to, breakingArticle, relatedArticles",
+        },
+        400,
       );
     }
 
@@ -275,7 +275,8 @@ app.post("/email/send", async (c) => {
     const emailHTML = generateEmailHTML({
       breakingArticle,
       relatedArticles,
-      preheaderText: preheaderText || breakingArticle.summary?.substring(0, 100) || '',
+      preheaderText:
+        preheaderText || breakingArticle.summary?.substring(0, 100) || "",
     });
 
     console.log("Sending email via Resend");
@@ -307,7 +308,7 @@ app.post("/email/send", async (c) => {
         error: "Failed to send email",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
@@ -332,7 +333,9 @@ app.get("/rss/fetch", async (c) => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-          const response = await fetch(articleUrl, { signal: controller.signal });
+          const response = await fetch(articleUrl, {
+            signal: controller.signal,
+          });
           clearTimeout(timeoutId);
           const html = await response.text();
 
@@ -365,7 +368,10 @@ app.get("/rss/fetch", async (c) => {
             link: articleUrl,
             pubDate: item.pubDate || "",
             summary: item.contentSnippet?.substring(0, 300) || "",
-            fullContent: bodyText.trim().replace(/\n/g, " ").replace(/\s+/g, " "),
+            fullContent: bodyText
+              .trim()
+              .replace(/\n/g, " ")
+              .replace(/\s+/g, " "),
             image: imageUrl,
             author: item.creator || "The Hacker News",
             categories: item.categories || [],
@@ -384,7 +390,7 @@ app.get("/rss/fetch", async (c) => {
             error: "Failed to scrape article content",
           };
         }
-      })
+      }),
     );
 
     return c.json({
@@ -401,7 +407,7 @@ app.get("/rss/fetch", async (c) => {
         error: "Failed to fetch RSS feed",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
@@ -447,10 +453,16 @@ app.post("/rss/scrape", async (c) => {
     });
 
     // Extract metadata
-    const title = $('meta[property="og:title"]').attr("content") || $("title").text();
-    const description = $('meta[property="og:description"]').attr("content") || "";
-    const image = $('meta[property="og:image"]').attr("content") || articleBody.find("img").first().attr("src") || "";
-    const pubDate = $('meta[property="article:published_time"]').attr("content") || "";
+    const title =
+      $('meta[property="og:title"]').attr("content") || $("title").text();
+    const description =
+      $('meta[property="og:description"]').attr("content") || "";
+    const image =
+      $('meta[property="og:image"]').attr("content") ||
+      articleBody.find("img").first().attr("src") ||
+      "";
+    const pubDate =
+      $('meta[property="article:published_time"]').attr("content") || "";
 
     return c.json({
       success: true,
@@ -470,7 +482,7 @@ app.post("/rss/scrape", async (c) => {
         error: "Failed to scrape article",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
