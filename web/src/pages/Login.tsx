@@ -18,13 +18,14 @@ export const Login = ({ onLogin }: LoginPageProps) => {
     setIsLoading(true);
 
     try {
-      const response = await api.post<{ idToken: string }>('auth', '/login', {
+      const response = await api.post<{ idToken: string; user: any }>('auth', '/login', {
         email,
         password,
       });
 
       // Store tokens
       localStorage.setItem('idToken', response.idToken);
+      localStorage.setItem('user', JSON.stringify(response.user));
 
       if (onLogin) {
         onLogin();
