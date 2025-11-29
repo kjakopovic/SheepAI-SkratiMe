@@ -6,7 +6,6 @@ import { createRoot } from 'react-dom/client';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import './i18n';
 import './index.css';
 import { Router } from './routes';
 
