@@ -135,7 +135,7 @@ export function CredibilityPanel({ article }: CredibilityPanelProps) {
             {isExporting ? 'Exporting...' : 'Export to Notion'}
           </button>
           
-          <Chatbot />
+          <Chatbot articleContext={article.content} />
         </div>
 
       </div>
