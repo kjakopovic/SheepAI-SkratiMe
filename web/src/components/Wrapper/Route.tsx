@@ -1,13 +1,12 @@
 import { memo, useCallback, useEffect, useMemo } from 'react';
 
+import paths from '@/constants/paths';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
 
 import { useUserContext } from '@/context/UserContext';
 
-import { paths } from '@/old-template/common/constants';
-
-import Authorization from '@/old-template/features/auth/components/Wrapper';
+import { Authorization } from './Authorization';
 
 const Route = ({
   component: Component,
