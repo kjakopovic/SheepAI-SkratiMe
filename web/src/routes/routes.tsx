@@ -1,5 +1,5 @@
 import paths from '@/constants/paths';
-import Login from '@/pages/Login';
+import { Login } from '@/pages/Login';
 
 const routes: Route[] = [
   {
