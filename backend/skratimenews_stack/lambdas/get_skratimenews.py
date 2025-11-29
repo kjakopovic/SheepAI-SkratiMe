@@ -41,6 +41,13 @@ class SkratimenewsModel(Model):
 logger = Logger(service="SkratimenewsGetLambda")
 
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+}
+
+
 def handler(event, context):
     logger.info("Received event", extra={"event": event})
 
@@ -56,7 +63,11 @@ def handler(event, context):
             item = SkratimenewsModel.get(item_id)
             response_body = item.attribute_values.copy()
 
-            return {"statusCode": 200, "body": json.dumps(response_body)}
+            return {
+                "statusCode": 200,
+                "headers": CORS_HEADERS,
+                "body": json.dumps(response_body),
+            }
         if category_id:
             # Query using news-category-index
             query_kwargs = {
@@ -88,7 +99,11 @@ def handler(event, context):
                 "items": items,
                 "last_evaluated_key": json.dumps(last_key) if last_key else None,
             }
-            return {"statusCode": 200, "body": json.dumps(response_body)}
+            return {
+                "statusCode": 200,
+                "headers": CORS_HEADERS,
+                "body": json.dumps(response_body),
+            }
         else:
             # Paginated scan
             scan_kwargs = {}
@@ -111,12 +126,24 @@ def handler(event, context):
                 "last_evaluated_key": json.dumps(last_key) if last_key else None,
             }
 
-            return {"statusCode": 200, "body": json.dumps(response_body)}
+            return {
+                "statusCode": 200,
+                "headers": CORS_HEADERS,
+                "body": json.dumps(response_body),
+            }
 
     except SkratimenewsModel.DoesNotExist:
         logger.warning("Item not found", extra={"id": item_id})
-        return {"statusCode": 404, "body": json.dumps({"error": "Item not found"})}
+        return {
+            "statusCode": 404,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"error": "Item not found"}),
+        }
 
     except Exception as e:
         logger.error("Unhandled exception", extra={"error": str(e)})
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        return {
+            "statusCode": 500,
+            "headers": CORS_HEADERS,
+            "body": json.dumps({"error": str(e)}),
+        }

@@ -8,9 +8,21 @@ const app = new Hono();
 
 // CORS configuration - adjust origins for production
 app.use('/*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'], // Add your frontend URLs
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
-  allowHeaders: ['Content-Type'],
+  origin: (origin) => {
+    // Allow all localhost origins for development
+    if (origin?.includes('localhost') || origin?.includes('127.0.0.1')) {
+      return origin;
+    }
+    // Allow your production domains
+    const allowedOrigins = [
+      'https://your-production-domain.com',
+      'https://your-vercel-app.vercel.app',
+    ];
+    return allowedOrigins.includes(origin || '') ? origin : allowedOrigins[0];
+  },
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
 
 // Initialize Notion client

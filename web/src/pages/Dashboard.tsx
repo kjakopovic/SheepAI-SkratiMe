@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { LayoutGrid, LayoutList } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { LayoutGrid, LayoutList, Bookmark } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import config from '../config'
 import { SimpleHeader } from '../components/ui/simple-header'
 import { TopicFilter } from '../components/ui/topic-filter'
 import { ArticleCard } from '../components/ui/article-card'
 import { ArticleDetail } from '../components/ui/article-detail'
-import { Chatbot } from '../components/ui/chatbot'
 import { mockArticles } from '../data/mock-data'
 import { Article, Category } from '../types'
 import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm'
-import { api } from '../services/axios-wrapper'
+import { exportToNotion } from '@/services/notion'
+import { useToggleBookmark } from '../hooks/useBookmarks'
 
 interface DashboardProps {
   onSettingsClick: () => void
@@ -18,11 +18,14 @@ interface DashboardProps {
 // eslint-disable-next-line react/function-component-definition
 export function Dashboard({ onSettingsClick }: DashboardProps) {
   const navigate = useNavigate()
+  const dataFetchedRef = useRef(false)
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
   const [showPodcastModal, setShowPodcastModal] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
+  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false)
+  const { bookmarks } = useToggleBookmark()
 
   const categories: Category[] = [
     'cyber-security',
@@ -37,17 +40,20 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     'network-security',
   ];
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [articles, setArticles] = useState<Article[]>([])
+  const [articles, setArticles] = useState<Article[]>(mockArticles)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const token = localStorage.getItem('idToken')
     if (!token) {
       navigate('/login')
+      return
     }
-  }, [])
 
-  useEffect(() => {
+    // Prevent double-fetching in Strict Mode or on quick remounts
+    if (dataFetchedRef.current) return
+    dataFetchedRef.current = true
+
     const fetchNews = async () => {
       try {
         const token = localStorage.getItem('idToken')
@@ -89,7 +95,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     }
 
     fetchNews()
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
     const now = new Date()
@@ -118,7 +124,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        if (user.email !== 'mikulec.marin52@gmail.com' || user.email !== 'hi@leaonard.solutions') {
+        if (user.email !== 'mikulec.marin52@gmail.com' || user.email !== 'hi@leonard.solutions') {
           console.log('User not authorized for TTS API');
           return;
         }
@@ -180,6 +186,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
 
   // Filter articles first
   const filteredArticles = articles.filter((article) => {
+    if (showBookmarksOnly && !bookmarks.includes(article.id)) return false
     if (selectedCategories.length === 0) return true
     return article.category.some((cat) =>
       selectedCategories.includes(cat as Category),
@@ -208,7 +215,18 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
 
         <main className="flex-1 overflow-y-auto scrollbar-thin md:mt-14 md:ml-72">
           <div className="w-full py-6 px-4 md:py-12 md:px-6">
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-end mb-6 gap-3">
+              <button
+                onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
+                className={`px-3 py-2 rounded-lg border border-gray-200 flex items-center gap-2 transition-all shadow-sm ${showBookmarksOnly
+                    ? 'bg-morplo-blue-100 text-white border-morplo-blue-100'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+              >
+                <Bookmark size={18} className={showBookmarksOnly ? 'fill-current' : ''} />
+                <span className="text-sm font-medium hidden md:inline">Saved</span>
+              </button>
+
               <div className="bg-white p-1 rounded-lg border border-gray-200 flex gap-1 shadow-sm">
                 <button
                   onClick={() => setViewMode('list')}

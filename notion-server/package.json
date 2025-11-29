@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "vercel-build": "echo 'Build step for Vercel'"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@vercel/node": "^3.2.27",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }
