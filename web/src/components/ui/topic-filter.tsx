@@ -11,6 +11,10 @@ import {
   Lock,
   FileWarning,
   Hash,
+  Network,
+  Eye,
+  Cpu,
+  Globe,
 } from 'lucide-react'
 import { Category } from '../../types'
 import { cn } from '../../lib/utils'
@@ -22,16 +26,28 @@ interface TopicFilterProps {
 }
 
 const categoryIcons: Record<string, React.ElementType> = {
-  Malware: Bug,
-  Phishing: Fish,
-  'AI Agents': Bot,
-  'Data Breach': Database,
-  Vulnerability: ShieldAlert,
-  'Social Engineering': Users,
-  'Cloud Security': Cloud,
-  DevSecOps: Code,
-  'Zero Trust': Lock,
-  Ransomware: FileWarning,
+  'malware-alerts': Bug,
+  'phishing': Fish,
+  'ai-agents': Bot,
+  'data-breaches': Database,
+  'vulnerability-reports': ShieldAlert,
+  'social-engineering': Users,
+  'cloud-security': Cloud,
+  'devsecops-news': Code,
+  'zero-trust': Lock,
+  'ransomware': FileWarning,
+  'cyber-security': ShieldAlert,
+  'privacy-updates': Eye,
+  'software-patches': Cpu,
+  'threat-intel': Globe,
+  'network-security': Network,
+}
+
+const formatCategoryName = (category: string) => {
+  return category
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
 
 export const TopicFilter = ({
@@ -117,7 +133,7 @@ export const TopicFilter = ({
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="line-clamp-1 leading-tight text-xs ">
-                  {category}
+                  {formatCategoryName(category)}
                 </span>
               </button>
             )
