@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { Client } from "@notionhq/client";
 import { handle } from "hono/vercel";
+import { Resend } from "resend";
 
 const app = new Hono().basePath("/api");
 
@@ -39,6 +40,9 @@ app.use(
 const notion = new Client({
   auth: process.env.NOTION_KEY,
 });
+
+// Initialize Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const NOTION_PAGE_ID = process.env.NOTION_SUMMARY_PAGE_ID;
 
@@ -156,6 +160,68 @@ app.post("/notion/append", async (c) => {
         details: error.message,
       },
       500,
+    );
+  }
+});
+
+// Endpoint to send email briefing
+app.post("/email/send", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { to, subject, html, text } = body;
+
+    console.log("Received email request:", {
+      hasTo: !!to,
+      hasSubject: !!subject,
+      hasHtml: !!html,
+      hasText: !!text,
+    });
+
+    if (!to || !subject) {
+      return c.json(
+        { error: "Missing required fields: to, subject" },
+        400
+      );
+    }
+
+    if (!html && !text) {
+      return c.json(
+        { error: "Either html or text content is required" },
+        400
+      );
+    }
+
+    console.log("Sending email via Resend");
+
+    // Send email using Resend
+    const { data, error } = await resend.emails.send({
+      from: "Skrati.me <info@mail.skrati-me.com>",
+      to: Array.isArray(to) ? to : [to],
+      subject: subject,
+      html: html,
+      text: text,
+    });
+
+    if (error) {
+      console.error("Resend API error:", error);
+      return c.json({ error: "Failed to send email", details: error }, 500);
+    }
+
+    console.log("Email sent successfully:", data);
+
+    return c.json({
+      success: true,
+      message: "Email sent successfully",
+      data,
+    });
+  } catch (error: any) {
+    console.error("Email send error:", error);
+    return c.json(
+      {
+        error: "Failed to send email",
+        details: error.message,
+      },
+      500
     );
   }
 });
