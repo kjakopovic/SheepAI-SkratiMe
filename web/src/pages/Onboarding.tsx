@@ -6,6 +6,7 @@ import paths from '@/constants/paths';
 
 import { ProgressBar } from '../components/ui/progress-bar';
 import { Category } from '../types/index';
+import { CATEGORIES } from '../data/categories';
 
 interface OnboardingProps {
   onComplete?: (userType: string, interests: Category[]) => void;
@@ -42,18 +43,9 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const navigate = useNavigate();
   const registrationData = location.state?.registrationData;
 
-  const categories: Category[] = [
-    'cyber-security',
-    'data-breaches',
-    'malware-alerts',
-    'vulnerability-reports',
-    'privacy-updates',
-    'cloud-security',
-    'devsecops-news',
-    'software-patches',
-    'threat-intel',
-    'network-security',
-  ];
+  const categories: Category[] = CATEGORIES.filter(
+    (cat) => cat.name !== 'networ' && cat.name !== 'uncategorised' && cat.name !== 'breaking-news'
+  );
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<Category[]>([]);
@@ -69,7 +61,9 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
 
   const handleInterestToggle = (interest: Category) => {
     setSelectedInterests((prev) =>
-      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest],
+      prev.some((i) => i.id === interest.id) 
+        ? prev.filter((i) => i.id !== interest.id) 
+        : [...prev, interest],
     );
   };
 
@@ -81,9 +75,14 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
 
     setIsSubmitting(true);
     try {
+      // Extract just the IDs for the API if that's what it expects, or send the whole object
+      // Assuming API expects IDs based on previous context, but let's send what we have
+      // If API expects strings, map to finalInterests.map(i => i.id)
+      const interestIds = finalInterests.map(i => i.id);
+
       await api.post('auth', '/register', {
         ...registrationData,
-        user_interests: [...finalInterests, finalUserType],
+        user_interests: [...interestIds, finalUserType],
         notion_link: notionDbLink
       });
       
@@ -302,7 +301,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 <div className="grid grid-cols-2 gap-3 mb-8">
                   {categories.map((category, index) => (
                     <motion.button
-                      key={category}
+                      key={category.id}
                       initial={{
                         opacity: 0,
                         y: 20,
@@ -315,9 +314,9 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                         delay: index * 0.04,
                       }}
                       onClick={() => handleInterestToggle(category)}
-                      className={`p-4 rounded-xl font-medium transition-all cursor-pointer ${selectedInterests.includes(category) ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
+                      className={`p-4 rounded-xl font-medium transition-all cursor-pointer ${selectedInterests.some(i => i.id === category.id) ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
                     >
-                      {formatCategory(category)}
+                      {formatCategory(category.name)}
                     </motion.button>
                   ))}
                 </div>

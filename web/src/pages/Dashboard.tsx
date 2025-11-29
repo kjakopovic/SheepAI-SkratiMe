@@ -9,8 +9,8 @@ import { ArticleDetail } from '../components/ui/article-detail'
 import { mockArticles } from '../data/mock-data'
 import { Article, Category } from '../types'
 import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm'
-import { exportToNotion } from '@/services/notion'
 import { useToggleBookmark } from '../hooks/useBookmarks'
+import { CATEGORIES } from '../data/categories'
 
 interface DashboardProps {
   onSettingsClick: () => void
@@ -27,20 +27,9 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false)
   const { bookmarks } = useToggleBookmark()
 
-  const categories: Category[] = [
-    'cyber-security',
-    'data-breaches',
-    'malware-alerts',
-    'vulnerability-reports',
-    'privacy-updates',
-    'cloud-security',
-    'devsecops-news',
-    'software-patches',
-    'threat-intel',
-    'network-security',
-  ];
+  const categories: Category[] = CATEGORIES
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [articles, setArticles] = useState<Article[]>(mockArticles)
+  const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -178,8 +167,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
 
   const handleToggleCategory = (category: Category) => {
     setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
+      prev.some((c) => c.id === category.id)
+        ? prev.filter((c) => c.id !== category.id)
         : [...prev, category],
     )
   }
@@ -188,8 +177,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   const filteredArticles = articles.filter((article) => {
     if (showBookmarksOnly && !bookmarks.includes(article.id)) return false
     if (selectedCategories.length === 0) return true
-    return article.category.some((cat) =>
-      selectedCategories.includes(cat as Category),
+    return article.category.some((articleCatId) =>
+      selectedCategories.some((selectedCat) => selectedCat.id === articleCatId),
     )
   })
 
@@ -251,7 +240,12 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
               </div>
             </div>
 
-            {filteredArticles.length === 0 ? (
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-morplo-blue-100 mb-4"></div>
+                <p className="text-morplo-gray-500 animate-pulse">Curating your feed...</p>
+              </div>
+            ) : filteredArticles.length === 0 ? (
               <div className="bg-white rounded-xl p-8 md:p-16 text-center">
                 <p className="text-lg text-[var(--text-secondary)] mb-2">
                   No articles found

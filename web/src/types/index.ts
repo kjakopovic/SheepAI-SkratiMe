@@ -1,14 +1,23 @@
-export type Category =
-  | 'cyber-security'
-  | 'data-breaches'
-  | 'malware-alerts'
-  | 'vulnerability-reports'
+export type CategoryName =
+  | 'breaking-news'
   | 'privacy-updates'
-  | 'cloud-security'
   | 'devsecops-news'
+  | 'malware-alerts'
+  | 'uncategorised'
+  | 'cloud-security'
+  | 'networ'
+  | 'vulnerability-reports'
   | 'software-patches'
+  | 'cyber-security'
   | 'threat-intel'
   | 'network-security'
+
+export type CategoryId = string
+
+export interface Category {
+  id: CategoryId
+  name: CategoryName
+}
 
 export interface Article {
   id: string
@@ -16,7 +25,7 @@ export interface Article {
   source: string
   sourceUrl: string
   publishedAt: string
-  category: string[]
+  category: CategoryId[]
   aiSummary: string
   relevanceScore: number
   credibilityScore: number
@@ -28,6 +37,7 @@ export interface Article {
   content: string
   imageUrl?: string
 }
+
 export interface UserStats {
   dailyStreak: number
   totalArticlesRead: number
@@ -39,6 +49,4 @@ export interface Badge {
   id: string
   name: string
   icon: string
-  description: string
-  unlockedAt?: string
 }
