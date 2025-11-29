@@ -31,7 +31,52 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const sendBriefingEmail = async () => {
+    const response = await fetch('https://sheep-ai-skrati-me-bmxo.vercel.app/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: 'marin.ivosevic91@gmail.com',
+        subject: 'BREAKING NEWS BRIEFING',
 
+        breakingArticle: {
+          title: 'MS Teams Guest Access Can Remove Defender Protection When Users Join External Tenants',
+          summary: 'Cybersecurity researchers have shed light on a cross-tenant blind spot that allows attackers to bypass Microsoft Defender for Office 365 protections via the guest access feature in Teams.',
+          image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_Md0lsjItddYFH1gCm6LZYxVDobM4ZWOweikeQFAT0yZNSYS8WKfg61LxSRjc49watAPtqESgvWx0UwppGQuw9FU8OMQDf9EOi1fWnVXF_H8L7QNOplD1-vdDAO-oU4cRg9CX2jky45M7SkmAF6b7GGi7UwMZQN4_7wnlG2D1mYl28_sUC7hLta8u37Oa/s790-rw-e365/msteams.jpg',
+          url: 'https://thehackernews.com/2025/11/ms-teams-guest-access-can-remove.html',
+          source: 'Ravie Lakshmanan'
+        },
+        relatedArticles: [
+          {
+            title: 'Legacy Python Bootstrap Scripts Create Domain-Takeover Risk in Multiple PyPI Packages',
+            summary: 'Cybersecurity researchers have discovered vulnerable code in legacy Python packages that could potentially pave the way for a supply chain compromise on the Python Package Index (PyPI) via a domain takeover attack.',
+            image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhMdVHqK8sA27WWR3ySGxson4kuqmBaXHQlFm3PSmRaHV6IGdnk_zK0tUvgrFyKepL2COnnm_yiIBdTy-ho7pFKSPQP7cCxkOugoV0s_2k3dUBYC0FI5BkY2tmR3Tsbxktsq7TnQRqzDhiOHe9SjVrRq2XHt5BYU01ctj8yUA8BTv6cDT8zREtEYAdrViUn/s790-rw-e365/setuptools.jpg',
+            url: 'https://thehackernews.com/2025/11/legacy-python-bootstrap-scripts-create.html',
+            source: 'Ravie Lakshmanan'
+          },
+          {
+            title: 'North Korean Hackers Deploy 197 npm Packages to Spread Updated OtterCookie Malware',
+            summary: 'The North Korean threat actors behind the Contagious Interview campaign have continued to flood the npm registry with 197 more malicious packages since last month.',
+            image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbHywoT-t7dx-yFp5L6Kj6AHPWvHYFoziGtqauAQGWvY55xCGgiw80AKaK962SgdMmomBf9EMT9cPAGPxx5GTi4lFq_ckm1Cjk3hGtRo1AnWVEjZkd89HlSOWuLuBC-whL565LElFcq2D55c9NrmQHx30eGNNugpcLqPAKDxRC5Zkwb-1lX1OC4Xu-QH13/s790-rw-e365/npm-malware.jpg',
+            url: 'https://thehackernews.com/2025/11/north-korean-hackers-deploy-197-npm.html',
+            source: 'The Hacker News'
+          },
+          {
+            title: 'MS Teams Guest Access Can Remove Defender Protection When Users Join External Tenants',
+            summary: 'Cybersecurity researchers have shed light on a cross-tenant blind spot that allows attackers to bypass Microsoft Defender for Office 365 protections via the guest access feature in Teams.',
+            image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg_Md0lsjItddYFH1gCm6LZYxVDobM4ZWOweikeQFAT0yZNSYS8WKfg61LxSRjc49watAPtqESgvWx0UwppGQuw9FU8OMQDf9EOi1fWnVXF_H8L7QNOplD1-vdDAO-oU4cRg9CX2jky45M7SkmAF6b7GGi7UwMZQN4_7wnlG2D1mYl28_sUC7hLta8u37Oa/s790-rw-e365/msteams.jpg',
+            url: 'https://thehackernews.com/2025/11/ms-teams-guest-access-can-remove.html',
+            source: 'The Hacker News'
+          }
+        ]
+      })
+    }
+
+    );
+
+    const result = await response.json();
+    console.log(result);
+  };
   useEffect(() => {
     const token = localStorage.getItem('idToken')
     if (!token) {
@@ -84,6 +129,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     }
 
     fetchNews()
+    /* sendBriefingEmail(); */
+
   }, [navigate])
 
   useEffect(() => {
@@ -208,8 +255,8 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
               <button
                 onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
                 className={`px-3 py-2 rounded-lg border border-gray-200 flex items-center gap-2 transition-all shadow-sm ${showBookmarksOnly
-                    ? 'bg-morplo-blue-100 text-white border-morplo-blue-100'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                  ? 'bg-morplo-blue-100 text-white border-morplo-blue-100'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
                   }`}
               >
                 <Bookmark size={18} className={showBookmarksOnly ? 'fill-current' : ''} />
