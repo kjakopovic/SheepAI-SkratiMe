@@ -1,15 +1,17 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState } from 'react';
+
+import { motion } from 'motion/react';
+
 interface LoginPageProps {
-  onLogin: () => void
+  onLogin: () => void;
 }
-export function Login({ onLogin }: LoginPageProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+export const Login = ({ onLogin }: LoginPageProps) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onLogin()
-  }
+    e.preventDefault();
+    onLogin();
+  };
   return (
     <div className="min-h-screen bg-[var(--bg-secondary)] flex items-center justify-center p-6">
       <motion.div
@@ -27,21 +29,14 @@ export function Login({ onLogin }: LoginPageProps) {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-            Welcome to NewsHub
-          </h1>
-          <p className="text-[var(--text-secondary)]">
-            Stay informed with personalized news
-          </p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Welcome to NewsHub</h1>
+          <p className="text-[var(--text-secondary)]">Stay informed with personalized news</p>
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-[var(--text-primary)] mb-2"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                 Email
               </label>
               <input
@@ -56,10 +51,7 @@ export function Login({ onLogin }: LoginPageProps) {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[var(--text-primary)] mb-2"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                 Password
               </label>
               <input
@@ -90,13 +82,11 @@ export function Login({ onLogin }: LoginPageProps) {
           <div className="mt-6 text-center">
             <p className="text-sm text-[var(--text-secondary)]">
               Don't have an account?{' '}
-              <button className="text-[var(--accent-blue)] font-medium hover:underline">
-                Sign up
-              </button>
+              <button className="text-[var(--accent-blue)] font-medium hover:underline">Sign up</button>
             </p>
           </div>
         </div>
       </motion.div>
     </div>
-  )
-}
+  );
+};
