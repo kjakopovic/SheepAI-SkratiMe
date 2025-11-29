@@ -9,9 +9,10 @@ export const SimpleHeader = ({ onSettingsClick, }: SimpleHeaderProps) => {
   return (
     <header className="bg-white border-b border-gray-300 px-4 md:px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[var(--text-primary)]">
-          Skrati.Me
-        </h1>
+
+        <div className="flex items-center gap-3">
+          <img src="image.png" alt="Skrati.Me Logo" className="w-24 h-8 object-contain" />
+        </div>
 
 
         <motion.button

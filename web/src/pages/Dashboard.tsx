@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import { LayoutGrid, LayoutList } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import config from '../config'
 import { SimpleHeader } from '../components/ui/simple-header'
 import { TopicFilter } from '../components/ui/topic-filter'
 import { ArticleCard } from '../components/ui/article-card'
@@ -33,12 +35,60 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     'threat-intel',
     'network-security',
   ];
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [articles, setArticles] = useState<Article[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const token = localStorage.getItem('idToken')
     if (!token) {
       navigate('/login')
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const token = localStorage.getItem('idToken')
+        const response = await fetch('https://5qqfb4ujpf.execute-api.eu-central-1.amazonaws.com/prod/news', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        console.log(response);
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+
+        const data = await response.json()
+
+        const mappedArticles: Article[] = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          source: 'SkratiMe',
+          sourceUrl: '#',
+          publishedAt: new Date().toISOString(),
+          category: [item.category_id],
+          aiSummary: item.summary,
+          relevanceScore: Math.floor(Math.random() * 20) + 80,
+          credibilityScore: 95,
+          biasLabel: 'Center',
+          uncertaintyLevel: 0,
+          consumed: false,
+          scrollDepth: 0,
+          hasAudio: false,
+          content: item.summary,
+          imageUrl: item.picture_url,
+        }))
+        setArticles(mappedArticles)
+      } catch (error) {
+        console.error('Error fetching news:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchNews()
   }, [])
 
   useEffect(() => {
@@ -73,13 +123,13 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
           return;
         }
       } else {
-         console.log('No user found in local storage');
-         return;
+        console.log('No user found in local storage');
+        return;
       }
 
       const text = "Good morning! Here is your daily cybersecurity briefing. Major data breaches were reported in the retail sector, and a new zero-day vulnerability affects popular cloud services."
-      
-      
+
+
       // WARNING: Exposing API keys on the client side is a security risk.
       // Ensure you restrict this key in Google Cloud Console to your domain.
       const apiKey = import.meta.env.VITE_GOOGLE_TTS_API_KEY;
@@ -96,9 +146,9 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
         },
         body: JSON.stringify({
           input: { text },
-          voice: { 
-            languageCode: 'en-US', 
-            name: 'en-US-Chirp-HD-D' 
+          voice: {
+            languageCode: 'en-US',
+            name: 'en-US-Chirp-HD-D'
           },
           audioConfig: { audioEncoding: 'MP3' },
         }),
@@ -129,7 +179,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   }
 
   // Filter articles first
-  const filteredArticles = mockArticles.filter((article) => {
+  const filteredArticles = articles.filter((article) => {
     if (selectedCategories.length === 0) return true
     return article.category.some((cat) =>
       selectedCategories.includes(cat as Category),
@@ -156,9 +206,34 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
           />
         </div>
 
-        <main className="flex-1 overflow-y-auto scrollbar-thin md:mt-14">
-          <div className="max-w-4xl mx-auto py-6 px-4 md:py-12 md:px-6">
-            {sortedArticles.length === 0 ? (
+        <main className="flex-1 overflow-y-auto scrollbar-thin md:mt-14 md:ml-72">
+          <div className="w-full py-6 px-4 md:py-12 md:px-6">
+            <div className="flex justify-end mb-6">
+              <div className="bg-white p-1 rounded-lg border border-gray-200 flex gap-1 shadow-sm">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'list'
+                    ? 'bg-gray-100 text-blue-600 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    }`}
+                  title="List view"
+                >
+                  <LayoutList size={20} />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'grid'
+                    ? 'bg-gray-100 text-blue-600 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    }`}
+                  title="Grid view"
+                >
+                  <LayoutGrid size={20} />
+                </button>
+              </div>
+            </div>
+
+            {filteredArticles.length === 0 ? (
               <div className="bg-white rounded-xl p-8 md:p-16 text-center">
                 <p className="text-lg text-[var(--text-secondary)] mb-2">
                   No articles found
@@ -168,14 +243,20 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4 md:space-y-6">
+              <div className={
+                viewMode === 'list'
+                  ? 'space-y-4 md:space-y-6'
+                  : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6'
+              } >
                 {sortedArticles.map((article) => (
                   <ArticleCard
                     key={article.id}
                     article={article}
+                    viewMode={viewMode}
                     onClick={() => {
                       trackArticleClick(article)
                       setSelectedArticle(article)
+
                     }}
                   />
                 ))}
@@ -242,7 +323,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
             </div>
 
             <div className="bg-gray-50 rounded-xl p-4 mb-6 flex items-center gap-4 border border-gray-100">
-              <button 
+              <button
                 onClick={handlePlayPodcast}
                 className="w-12 h-12 bg-morplo-blue-100 hover:opacity-90 text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0 pl-1 cursor-pointer"
               >

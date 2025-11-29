@@ -1,7 +1,8 @@
 import React from 'react'
-import { CheckCircleIcon } from 'lucide-react'
+import { CheckCircleIcon, Bookmark } from 'lucide-react'
 import { Article } from '../../types'
 import { cn } from '../../lib/utils'
+import { useToggleBookmark } from '../../hooks/useBookmarks'
 
 interface ArticleCardProps {
   article: Article
@@ -14,6 +15,9 @@ export function ArticleCard({
   onClick,
   viewMode = 'list',
 }: ArticleCardProps) {
+  const { toggleBookmark, isBookmarked, isLoading } = useToggleBookmark()
+  const bookmarked = isBookmarked(article.id)
+
   const getRelevanceColor = (score: number) => {
     if (score >= 85) return 'var(--color-morplo-green-100)'
     if (score >= 70) return 'var(--color-morplo-yellow-400)'
@@ -52,9 +56,26 @@ export function ArticleCard({
             <h3 className="text-lg font-semibold text-morplo-gray-900 line-clamp-2 leading-snug">
               {article.title}
             </h3>
-            {article.consumed && (
-              <CheckCircleIcon className="w-5 h-5 text-morplo-green-100 flex-shrink-0" />
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  void toggleBookmark(article.id)
+                }}
+                disabled={isLoading}
+                className="text-morplo-gray-400 hover:text-morplo-blue-100 transition-colors"
+              >
+                <Bookmark
+                  className={cn(
+                    'w-5 h-5',
+                    bookmarked && 'fill-current text-morplo-blue-100',
+                  )}
+                />
+              </button>
+              {article.consumed && (
+                <CheckCircleIcon className="w-5 h-5 text-morplo-green-100 flex-shrink-0" />
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 mb-3 text-sm text-morplo-gray-700">
             <span>{article.source}</span>
