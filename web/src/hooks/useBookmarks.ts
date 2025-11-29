@@ -1,8 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ky from 'ky';
 import config from '../config';
+import { useState, useEffect, useCallback } from 'react';
 
 const API_URL = 'https://9njbc5qvn5.execute-api.eu-central-1.amazonaws.com';
+const BOOKMARKS_KEY = 'user_bookmarks';
+const BOOKMARKS_EVENT = 'bookmarks_updated';
 
 // Get auth token from localStorage or your auth context
 const getAuthToken = (): string | null => {
@@ -98,25 +101,59 @@ export const useRemoveBookmark = () => {
 
 // Toggle bookmark (add if not bookmarked, remove if already bookmarked)
 export const useToggleBookmark = () => {
-  const { data: bookmarks } = useGetBookmarks();
-  const addBookmark = useAddBookmark();
-  const removeBookmark = useRemoveBookmark();
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const isBookmarked = (newsId: string): boolean => {
-    return bookmarks?.bookmarks.some((b) => b.id === newsId) ?? false;
+  const getBookmarks = () => {
+    try {
+      const stored = localStorage.getItem(BOOKMARKS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   };
 
-  const toggleBookmark = async (newsId: string) => {
-    if (isBookmarked(newsId)) {
-      await removeBookmark.mutateAsync(newsId);
-    } else {
-      await addBookmark.mutateAsync(newsId);
+  useEffect(() => {
+    setBookmarks(getBookmarks());
+
+    const handleUpdate = () => setBookmarks(getBookmarks());
+
+    // Listen for local events (same tab) and storage events (cross-tab)
+    window.addEventListener(BOOKMARKS_EVENT, handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener(BOOKMARKS_EVENT, handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  const isBookmarked = useCallback((articleId: string) => {
+    return bookmarks.includes(articleId);
+  }, [bookmarks]);
+
+  const toggleBookmark = async (articleId: string) => {
+    setIsLoading(true);
+    try {
+      const current = getBookmarks();
+      const updated = current.includes(articleId)
+        ? current.filter((id: string) => id !== articleId)
+        : [...current, articleId];
+
+      localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(updated));
+      setBookmarks(updated);
+      window.dispatchEvent(new Event(BOOKMARKS_EVENT));
+    } catch (error) {
+      console.error('Failed to toggle bookmark', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     toggleBookmark,
     isBookmarked,
-    isLoading: addBookmark.isPending || removeBookmark.isPending,
+    isLoading,
+    bookmarks,
   };
 };
