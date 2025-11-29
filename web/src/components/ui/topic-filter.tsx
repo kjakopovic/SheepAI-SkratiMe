@@ -12,31 +12,35 @@ export function TopicFilter({
   onToggleCategory,
 }: TopicFilterProps) {
   return (
-    <div className="w-64 bg-white border-r border-morplo-gray-200 h-full overflow-y-auto scrollbar-thin">
-      <div className="p-6">
-        <h2 className="text-sm font-semibold text-morplo-gray-900 mb-4">
-          Topics
-        </h2>
+    <div className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-[var(--border-subtle)] md:h-full flex-shrink-0">
+      <div className="p-4 md:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">
+            Topics
+          </h2>
+          {selectedCategories.length > 0 && (
+            <button
+              onClick={() =>
+                selectedCategories.forEach((cat) => onToggleCategory(cat))
+              }
+              className="text-xs md:text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
 
-        {selectedCategories.length > 0 && (
-          <button
-            onClick={() =>
-              selectedCategories.forEach((cat) => onToggleCategory(cat))
-            }
-            className="w-full mb-4 px-3 py-2 text-sm text-morplo-gray-600 hover:text-morplo-gray-900 transition-colors"
-          >
-            Clear all
-          </button>
-        )}
-
-        <div className="space-y-1">
+        <div className="flex md:flex-col gap-2 md:gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-thin">
           {categories.map((category) => {
             const isSelected = selectedCategories.includes(category)
             return (
               <button
                 key={category}
                 onClick={() => onToggleCategory(category)}
-                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${isSelected ? 'bg-morplo-blue-100 text-white' : 'text-morplo-gray-600 hover:bg-morplo-gray-130'}`}
+                className={`flex-shrink-0 px-3 py-2 rounded-lg text-left text-sm transition-colors whitespace-nowrap ${isSelected
+                  ? 'bg-[var(--accent-blue)] text-white'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                  }`}
               >
                 {category}
               </button>

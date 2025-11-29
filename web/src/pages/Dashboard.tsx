@@ -29,7 +29,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
       <SimpleHeader onSettingsClick={onSettingsClick} />
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <TopicFilter
           categories={categories}
           selectedCategories={selectedCategories}
@@ -37,10 +37,10 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
         />
 
         <main className="flex-1 overflow-y-auto scrollbar-thin">
-          <div className="max-w-4xl mx-auto py-12 px-6">
+          <div className="max-w-4xl mx-auto py-6 px-4 md:py-12 md:px-6">
             {filteredArticles.length === 0 ? (
-              <div className="bg-white rounded-xl p-16 text-center">
-                <p className="text-lg text-morplo-gray-600 mb-2">
+              <div className="bg-white rounded-xl p-8 md:p-16 text-center">
+                <p className="text-lg text-[var(--text-secondary)] mb-2">
                   No articles found
                 </p>
                 <p className="text-sm text-morplo-gray-500">
@@ -48,7 +48,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {filteredArticles.map((article) => (
                   <ArticleCard
                     key={article.id}

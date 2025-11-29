@@ -20,8 +20,8 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-4xl h-full bg-morplo-gray-130 overflow-y-auto scrollbar-thin animate-slide-in">
-        <div className="sticky top-0 z-10 bg-white border-b border-morplo-gray-200 px-8 py-4">
+      <div className="relative w-full max-w-4xl h-full bg-[var(--bg-secondary)] overflow-y-auto scrollbar-thin animate-slide-in">
+        <div className="sticky top-0 z-10 bg-white border-b border-[var(--border-subtle)] px-4 md:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -46,17 +46,17 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
               rel="noopener noreferrer"
               className="px-4 py-2 text-sm font-medium text-morplo-blue-100 hover:bg-morplo-gray-130 rounded-lg transition-colors flex items-center gap-2"
             >
-              View original
+              <span className="hidden sm:inline">View original</span>
               <ExternalLinkIcon className="w-4 h-4" />
             </a>
           </div>
         </div>
 
-        <div className="p-8">
-          <div className="grid grid-cols-3 gap-8">
-            <div className="col-span-2 space-y-6">
+        <div className="p-4 md:p-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="col-span-1 md:col-span-2 space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-morplo-gray-900 mb-6 leading-tight">
+                <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
                   {article.title}
                 </h1>
 
@@ -65,7 +65,7 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
                     <img
                       src={article.imageUrl}
                       alt=""
-                      className="w-full h-80 object-cover"
+                      className="w-full h-48 md:h-80 object-cover"
                     />
                   </div>
                 )}

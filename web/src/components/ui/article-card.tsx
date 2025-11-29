@@ -15,11 +15,11 @@ export function ArticleCard({ article, onClick }: ArticleCardProps) {
   return (
     <article
       onClick={onClick}
-      className="bg-white rounded-xl p-6 hover:shadow-md transition-shadow cursor-pointer"
+      className="bg-white rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer"
     >
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {article.imageUrl && (
-          <div className="w-40 h-28 rounded-lg overflow-hidden flex-shrink-0">
+          <div className="w-full h-48 md:w-40 md:h-28 rounded-lg overflow-hidden flex-shrink-0">
             <img
               src={article.imageUrl}
               alt=""

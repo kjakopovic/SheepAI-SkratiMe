@@ -7,10 +7,10 @@ interface SimpleHeaderProps {
 }
 export const SimpleHeader = ({ onSettingsClick, showSettings = true }: SimpleHeaderProps) => {
   return (
-    <header className="bg-white border-b border-morplo-gray-200 px-6 py-4">
+    <header className="bg-white border-b border-[var(--border-subtle)] px-4 md:px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-morplo-gray-900">
-          NewsHub
+        <h1 className="text-xl font-semibold text-[var(--text-primary)]">
+          Skrati.Me
         </h1>
 
         {showSettings && onSettingsClick && (
