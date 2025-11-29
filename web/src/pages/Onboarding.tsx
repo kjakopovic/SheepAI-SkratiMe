@@ -1,19 +1,17 @@
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ProgressBar } from '../components/ui/progress-bar'
-import { Category } from '../types/index'
+import { useState } from 'react';
+
+import { AnimatePresence, motion } from 'motion/react';
+
+import { ProgressBar } from '../components/ui/progress-bar';
+import { Category } from '../types/index';
+
 interface OnboardingProps {
-  onComplete: (userType: string, interests: Category[]) => void
+  onComplete: (userType: string, interests: Category[]) => void;
 }
-type UserType =
-  | 'Student'
-  | 'Professional'
-  | 'Researcher'
-  | 'Enthusiast'
-  | 'Other'
+type UserType = 'Student' | 'Professional' | 'Researcher' | 'Enthusiast' | 'Other';
 const userTypes: {
-  value: UserType
-  description: string
+  value: UserType;
+  description: string;
 }[] = [
   {
     value: 'Student',
@@ -35,50 +33,47 @@ const userTypes: {
     value: 'Other',
     description: 'Just exploring',
   },
-]
-export function Onboarding({ onComplete }: OnboardingProps) {
-
-const categories: Category[] = [
-  'Malware',
-  'Phishing',
-  'AI Agents',
-  'Data Breach',
-  'Vulnerability',
-  'Social Engineering',
-  'Cloud Security',
-  'DevSecOps',
-  'Zero Trust',
-  'Ransomware',
-]
-  const [step, setStep] = useState(1)
-  const [userType, setUserType] = useState<UserType | null>(null)
-  const [selectedInterests, setSelectedInterests] = useState<Category[]>([])
-  const totalSteps = 3
+];
+export const Onboarding = ({ onComplete }: OnboardingProps) => {
+  const categories: Category[] = [
+    'Malware',
+    'Phishing',
+    'AI Agents',
+    'Data Breach',
+    'Vulnerability',
+    'Social Engineering',
+    'Cloud Security',
+    'DevSecOps',
+    'Zero Trust',
+    'Ransomware',
+  ];
+  const [step, setStep] = useState(1);
+  const [userType, setUserType] = useState<UserType | null>(null);
+  const [selectedInterests, setSelectedInterests] = useState<Category[]>([]);
+  const totalSteps = 3;
   const handleUserTypeSelect = (type: UserType) => {
-    setUserType(type)
-  }
+    setUserType(type);
+  };
   const handleInterestToggle = (interest: Category) => {
     setSelectedInterests((prev) =>
-      prev.includes(interest)
-        ? prev.filter((i) => i !== interest)
-        : [...prev, interest],
-    )
-  }
+      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest],
+    );
+  };
   const handleNext = () => {
     if (step < totalSteps) {
-      setStep(step + 1)
+      setStep(step + 1);
     } else {
-      onComplete(userType || 'Other', selectedInterests)
+      onComplete(userType || 'Other', selectedInterests);
     }
-  }
+  };
   const handleSkip = () => {
-    onComplete('Other', [])
-  }
+    onComplete('Other', []);
+  };
   const canProceed = () => {
-    if (step === 2) return userType !== null
-    if (step === 3) return selectedInterests.length > 0
-    return true
-  }
+    if (step === 2) return userType !== null;
+    if (step === 3) return selectedInterests.length > 0;
+    return true;
+  };
   return (
     <div className="min-h-screen bg-[var(--bg-secondary)] flex flex-col">
       <div className="w-full px-6 pt-6">
@@ -110,12 +105,9 @@ const categories: Category[] = [
                 }}
                 className="text-center"
               >
-                <h1 className="text-4xl font-bold text-[var(--text-primary)] mb-4">
-                  Welcome to NewsHub
-                </h1>
+                <h1 className="text-4xl font-bold text-[var(--text-primary)] mb-4">Welcome to NewsHub</h1>
                 <p className="text-lg text-[var(--text-secondary)] mb-12 max-w-lg mx-auto">
-                  Let's personalize your experience. We'll help you discover
-                  news that matters to you.
+                  Let's personalize your experience. We'll help you discover news that matters to you.
                 </p>
                 <motion.button
                   onClick={handleNext}
@@ -152,12 +144,8 @@ const categories: Category[] = [
                 }}
               >
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-3">
-                    What describes you best?
-                  </h2>
-                  <p className="text-[var(--text-secondary)]">
-                    This helps us tailor content to your needs
-                  </p>
+                  <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-3">What describes you best?</h2>
+                  <p className="text-[var(--text-secondary)]">This helps us tailor content to your needs</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 mb-8">
@@ -246,9 +234,7 @@ const categories: Category[] = [
                 }}
               >
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-3">
-                    Choose your interests
-                  </h2>
+                  <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-3">Choose your interests</h2>
                   <p className="text-[var(--text-secondary)]">
                     Select topics you'd like to follow (choose at least one)
                   </p>
@@ -318,5 +304,5 @@ const categories: Category[] = [
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

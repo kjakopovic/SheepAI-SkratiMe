@@ -1,20 +1,15 @@
-import React from 'react'
-import { SettingsIcon } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { SettingsIcon } from 'lucide-react';
+import { motion } from 'motion/react';
+
 interface SimpleHeaderProps {
-  onSettingsClick?: () => void
-  showSettings?: boolean
+  onSettingsClick?: () => void;
+  showSettings?: boolean;
 }
-export function SimpleHeader({
-  onSettingsClick,
-  showSettings = true,
-}: SimpleHeaderProps) {
+export const SimpleHeader = ({ onSettingsClick, showSettings = true }: SimpleHeaderProps) => {
   return (
     <header className="bg-white border-b border-[var(--border-subtle)] px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-[var(--text-primary)]">
-          NewsHub
-        </h1>
+        <h1 className="text-xl font-semibold text-[var(--text-primary)]">NewsHub</h1>
 
         {showSettings && onSettingsClick && (
           <motion.button
@@ -33,5 +28,5 @@ export function SimpleHeader({
         )}
       </div>
     </header>
-  )
-}
+  );
+};
