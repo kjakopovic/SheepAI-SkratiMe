@@ -51,19 +51,18 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
     const fetchNews = async () => {
       try {
         const token = localStorage.getItem('idToken')
-        const response = await fetch('https://5qqfb4ujpf.execute-api.eu-central-1.amazonaws.com/prod/news', {
+        console.log(token)
+        const response = await fetch('https://1zt5usufzc.execute-api.eu-central-1.amazonaws.com/prod/news', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         })
-        console.log(response);
-        if (!response.ok) {
-          throw new Error('Network response was not ok')
-        }
+
+
 
         const data = await response.json()
-
-        const mappedArticles: Article[] = data.map((item: any) => ({
+        console.log(data.items);
+        const mappedArticles: Article[] = data.items.map((item: any) => ({
           id: item.id,
           title: item.title,
           source: 'SkratiMe',
