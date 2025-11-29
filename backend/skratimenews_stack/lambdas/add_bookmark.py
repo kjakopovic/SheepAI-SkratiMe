@@ -24,6 +24,21 @@ class UserBookmarkModel(Model):
 def handler(event, context):
     logger.info("Received event", extra={"event": event})
 
+    # Handle CORS preflight
+    if event.get("httpMethod") == "OPTIONS":
+        logger.info("OPTIONS preflight request")
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": event.get("headers", {}).get(
+                    "origin", "*"
+                ),
+                "Access-Control-Allow-Methods": "OPTIONS,POST",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization",
+            },
+            "body": json.dumps({"message": "OK"}),
+        }
+
     try:
         # Extract user ID from Cognito authorizer context
         user_id = event["requestContext"]["authorizer"]["claims"]["sub"]
@@ -42,7 +57,10 @@ def handler(event, context):
         # Check if bookmark already exists
         try:
             existing_bookmark = UserBookmarkModel.get(user_id, news_id)
-            logger.info("Bookmark already exists", extra={"user_id": user_id, "news_id": news_id})
+            logger.info(
+                "Bookmark already exists",
+                extra={"user_id": user_id, "news_id": news_id},
+            )
             return {
                 "statusCode": 200,
                 "body": json.dumps({"message": "Bookmark already exists"}),
@@ -59,15 +77,20 @@ def handler(event, context):
         )
         bookmark.save()
 
-        logger.info("Bookmark created successfully", extra={"user_id": user_id, "news_id": news_id})
+        logger.info(
+            "Bookmark created successfully",
+            extra={"user_id": user_id, "news_id": news_id},
+        )
 
         return {
             "statusCode": 201,
-            "body": json.dumps({
-                "message": "Bookmark added successfully",
-                "user_id": user_id,
-                "news_id": news_id
-            }),
+            "body": json.dumps(
+                {
+                    "message": "Bookmark added successfully",
+                    "user_id": user_id,
+                    "news_id": news_id,
+                }
+            ),
         }
 
     except Exception as e:

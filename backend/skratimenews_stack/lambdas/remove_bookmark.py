@@ -23,6 +23,21 @@ class UserBookmarkModel(Model):
 def handler(event, context):
     logger.info("Received event", extra={"event": event})
 
+    # Handle CORS preflight
+    if event.get("httpMethod") == "OPTIONS":
+        logger.info("OPTIONS preflight request")
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": event.get("headers", {}).get(
+                    "origin", "*"
+                ),
+                "Access-Control-Allow-Methods": "OPTIONS,POST",
+                "Access-Control-Allow-Headers": "Content-Type,Authorization",
+            },
+            "body": json.dumps({"message": "OK"}),
+        }
+
     try:
         # Extract user ID from Cognito authorizer context
         user_id = event["requestContext"]["authorizer"]["claims"]["sub"]
@@ -41,14 +56,19 @@ def handler(event, context):
         try:
             bookmark = UserBookmarkModel.get(user_id, news_id)
             bookmark.delete()
-            logger.info("Bookmark deleted successfully", extra={"user_id": user_id, "news_id": news_id})
+            logger.info(
+                "Bookmark deleted successfully",
+                extra={"user_id": user_id, "news_id": news_id},
+            )
 
             return {
                 "statusCode": 200,
                 "body": json.dumps({"message": "Bookmark removed successfully"}),
             }
         except UserBookmarkModel.DoesNotExist:
-            logger.warning("Bookmark not found", extra={"user_id": user_id, "news_id": news_id})
+            logger.warning(
+                "Bookmark not found", extra={"user_id": user_id, "news_id": news_id}
+            )
             return {
                 "statusCode": 404,
                 "body": json.dumps({"error": "Bookmark not found"}),
