@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import Parser from "rss-parser";
 import * as cheerio from "cheerio";
 
-const app = new Hono().basePath("/api");
+const app = new Hono();
 
 // CORS configuration - allow localhost for development
 app.use(
