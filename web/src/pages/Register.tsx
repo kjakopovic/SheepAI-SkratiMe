@@ -104,7 +104,7 @@ export const Register = ({ onRegister, onLoginClick }: RegisterPageProps) => {
               type="submit"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full px-4 py-3 bg-morplo-blue-100 text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors"
+              className="w-full px-4 py-3 bg-morplo-blue-100 text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors cursor-pointer"
             >
               Continue to Onboarding
             </motion.button>
@@ -115,7 +115,7 @@ export const Register = ({ onRegister, onLoginClick }: RegisterPageProps) => {
               Already have an account?{' '}
               <button 
                 onClick={onLoginClick}
-                className="text-morplo-blue-100 hover:underline font-medium"
+                className="text-morplo-blue-100 hover:underline font-medium cursor-pointer"
             > Sign in </button>
             </p>
           </div>

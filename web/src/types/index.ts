@@ -1,14 +1,14 @@
 export type Category =
-  | 'Malware'
-  | 'Phishing'
-  | 'AI Agents'
-  | 'Data Breach'
-  | 'Vulnerability'
-  | 'Social Engineering'
-  | 'Cloud Security'
-  | 'DevSecOps'
-  | 'Zero Trust'
-  | 'Ransomware'
+  | 'cyber-security'
+  | 'data-breaches'
+  | 'malware-alerts'
+  | 'vulnerability-reports'
+  | 'privacy-updates'
+  | 'cloud-security'
+  | 'devsecops-news'
+  | 'software-patches'
+  | 'threat-intel'
+  | 'network-security'
 
 export interface Article {
   id: string

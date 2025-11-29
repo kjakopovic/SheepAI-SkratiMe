@@ -56,7 +56,7 @@ export const TopicFilter = ({
             <button
               onClick={() => setActiveTab('personal')}
               className={cn(
-                'flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all',
+                'flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all cursor-pointer',
                 activeTab === 'personal'
                   ? 'bg-blue-500 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
@@ -67,7 +67,7 @@ export const TopicFilter = ({
             <button
               onClick={() => setActiveTab('trending')}
               className={cn(
-                'flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all',
+                'flex-1 py-2 text-xs font-bold uppercase tracking-wide rounded-lg transition-all cursor-pointer',
                 activeTab === 'trending'
                   ? 'bg-blue-500 text-white shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
@@ -83,7 +83,7 @@ export const TopicFilter = ({
                 onClick={() =>
                   selectedCategories.forEach((cat) => onToggleCategory(cat))
                 }
-                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors px-2 py-1 rounded-md hover:bg-primary/10"
+                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors px-2 py-1 rounded-md hover:bg-primary/10 cursor-pointer"
               >
                 Clear all
               </button>
@@ -100,7 +100,7 @@ export const TopicFilter = ({
                 key={category}
                 onClick={() => onToggleCategory(category)}
                 className={cn(
-                  'group flex items-center justify-center px-4 py-4 rounded-lg text-xs font-medium transition-all duration-200 border border-transparent text-center h-10 md:h-24 md:flex-col md:gap-2',
+                  'group flex items-center justify-center px-2 py-2 rounded-lg text-xs font-medium transition-all duration-200 border border-transparent text-center h-10 md:h-24 md:flex-col md:gap-2 cursor-pointer',
                   isSelected
                     ? 'bg-blue-500 text-primary-foreground shadow-md shadow-primary/20 border-primary/10'
                     : 'bg-card hover:bg-accent hover:text-accent-foreground border-border/50 hover:border-border',

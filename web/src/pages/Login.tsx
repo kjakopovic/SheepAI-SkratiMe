@@ -18,13 +18,14 @@ export const Login = ({ onLogin }: LoginPageProps) => {
     setIsLoading(true);
 
     try {
-      const response = await api.post<{ idToken: string }>('auth', '/login', {
+      const response = await api.post<{ idToken: string; user: any }>('auth', '/login', {
         email,
         password,
       });
 
       // Store tokens
       localStorage.setItem('idToken', response.idToken);
+      localStorage.setItem('user', JSON.stringify(response.user));
 
       if (onLogin) {
         onLogin();
@@ -98,7 +99,7 @@ export const Login = ({ onLogin }: LoginPageProps) => {
               disabled={isLoading}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full px-4 py-3 bg-morplo-blue-100 text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-morplo-blue-100 text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
             >
               {isLoading ? 'Signing in...' : 'Continue'}
             </motion.button>
@@ -107,7 +108,7 @@ export const Login = ({ onLogin }: LoginPageProps) => {
           <div className="mt-6 text-center">
             <p className="text-sm text-morplo-gray-600">
               Don't have an account?{' '}
-              <button onClick={() => navigate(paths.REGISTER)} className="text-morplo-blue-100 font-medium hover:underline">
+              <button onClick={() => navigate(paths.REGISTER)} className="text-morplo-blue-100 font-medium hover:underline cursor-pointer">
                 Sign up
               </button>
             </p>
