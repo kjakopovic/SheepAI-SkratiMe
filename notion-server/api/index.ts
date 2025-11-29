@@ -282,7 +282,7 @@ function generateEmailHTML(data: {
 </html>`;
 }
 
-// Endpoint to fetch and scrape Hacker News RSS feed
+// Endpoint to fetch RSS feed (without full scraping)
 app.get("/rss/fetch", async (c) => {
   try {
     console.log("Fetching RSS feed from:", RSS_FEED_URL);
@@ -291,66 +291,16 @@ app.get("/rss/fetch", async (c) => {
     const feed = await rssParser.parseURL(RSS_FEED_URL);
     console.log(`Found ${feed.items.length} items in RSS feed`);
 
-    // Process each article
-    const articles = await Promise.all(
-      feed.items.slice(0, 10).map(async (item) => {
-        try {
-          const articleUrl = item.link || "";
-          console.log(`Scraping article: ${articleUrl}`);
-
-          // Fetch the article HTML
-          const response = await fetch(articleUrl);
-          const html = await response.text();
-
-          // Load HTML with Cheerio
-          const $ = cheerio.load(html);
-
-          // Remove unwanted elements
-          $(".dog_two").remove();
-          $(".separator").remove();
-
-          // Extract article body
-          const articleBody = $("#articlebody");
-
-          // Get clean text content
-          let bodyText = "";
-          articleBody.find("p, h2, ul, li").each((_, element) => {
-            const text = $(element).text().trim();
-            if (text) {
-              bodyText += text + "\n\n";
-            }
-          });
-
-          // Extract image from article body
-          const firstImage = articleBody.find("img").first();
-          const imageUrl = firstImage.attr("src") || item.enclosure?.url || "";
-
-          return {
-            title: item.title || "",
-            link: articleUrl,
-            pubDate: item.pubDate || "",
-            summary: item.contentSnippet?.substring(0, 300) || "",
-            fullContent: bodyText.trim(),
-            image: imageUrl,
-            author: item.creator || "The Hacker News",
-            categories: item.categories || [],
-          };
-        } catch (error) {
-          console.error(`Error scraping article ${item.link}:`, error);
-          return {
-            title: item.title || "",
-            link: item.link || "",
-            pubDate: item.pubDate || "",
-            summary: item.contentSnippet || "",
-            fullContent: "",
-            image: item.enclosure?.url || "",
-            author: item.creator || "The Hacker News",
-            categories: item.categories || [],
-            error: "Failed to scrape article content",
-          };
-        }
-      })
-    );
+    // Return RSS items without scraping (use /rss/scrape for individual articles)
+    const articles = feed.items.slice(0, 20).map((item) => ({
+      title: item.title || "",
+      link: item.link || "",
+      pubDate: item.pubDate || "",
+      summary: item.contentSnippet?.substring(0, 300) || "",
+      image: item.enclosure?.url || "",
+      author: item.creator || "The Hacker News",
+      categories: item.categories || [],
+    }));
 
     return c.json({
       success: true,
@@ -383,8 +333,12 @@ app.post("/rss/scrape", async (c) => {
 
     console.log(`Scraping single article: ${url}`);
 
-    // Fetch the article HTML
-    const response = await fetch(url);
+    // Fetch the article HTML with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
     const html = await response.text();
 
     // Load HTML with Cheerio
