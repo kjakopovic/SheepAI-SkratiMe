@@ -5,7 +5,7 @@ import { TopicFilter } from '../components/ui/topic-filter'
 import { ArticleCard } from '../components/ui/article-card'
 import { ArticleDetail } from '../components/ui/article-detail'
 import { Chatbot } from '../components/ui/chatbot'
-import { mockArticles, categories } from '../data/mock-data'
+import { mockArticles } from '../data/mock-data'
 import { Article, Category } from '../types'
 import { sortArticlesByRelevance, trackArticleClick } from '../lib/relevance-alorithm'
 
@@ -18,6 +18,19 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
   const [showPodcastModal, setShowPodcastModal] = useState(false)
+
+  const categories: Category[] = [
+    'cyber-security',
+    'data-breaches',
+    'malware-alerts',
+    'vulnerability-reports',
+    'privacy-updates',
+    'cloud-security',
+    'devsecops-news',
+    'software-patches',
+    'threat-intel',
+    'network-security',
+  ];
 
   useEffect(() => {
     const token = localStorage.getItem('idToken')
