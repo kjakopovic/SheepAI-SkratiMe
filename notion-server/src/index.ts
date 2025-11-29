@@ -1,32 +1,32 @@
-import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { Client } from '@notionhq/client';
-import { Resend } from 'resend';
-import Parser from 'rss-parser';
-import * as cheerio from 'cheerio';
-import 'dotenv/config';
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { Client } from "@notionhq/client";
+import { Resend } from "resend";
+import Parser from "rss-parser";
+import * as cheerio from "cheerio";
+import "dotenv/config";
 
 const app = new Hono();
 
 // CORS configuration - adjust origins for production
-app.use('/*', cors({
-  origin: (origin) => {
-    // Allow all localhost origins for development
-    if (origin?.includes('localhost') || origin?.includes('127.0.0.1')) {
-      return origin;
-    }
-    // Allow your production domains
-    const allowedOrigins = [
-      'https://your-production-domain.com',
-      'https://your-vercel-app.vercel.app',
-    ];
-    return allowedOrigins.includes(origin || '') ? origin : allowedOrigins[0];
-  },
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+app.use(
+  "/*",
+  cors({
+    origin: (origin) => {
+      // Allow all localhost origins for development
+      if (origin?.includes("localhost") || origin?.includes("127.0.0.1")) {
+        return origin;
+      }
+      // Allow your production domains
+      const allowedOrigins = ["https://skrati-me.com"];
+      return allowedOrigins.includes(origin || "") ? origin : allowedOrigins[0];
+    },
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
 
 // Initialize Notion client
 const notion = new Client({
@@ -40,32 +40,32 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const rssParser = new Parser();
 
 const NOTION_PAGE_ID = process.env.NOTION_SUMMARY_PAGE_ID;
-const RSS_FEED_URL = 'https://feeds.feedburner.com/TheHackersNews';
+const RSS_FEED_URL = "https://feeds.feedburner.com/TheHackersNews";
 
 // Health check endpoint
-app.get('/', (c) => {
-  return c.json({ message: 'Notion API server is running' });
+app.get("/", (c) => {
+  return c.json({ message: "Notion API server is running" });
 });
 
 // Endpoint to append content to Notion page
-app.post('/api/notion/append', async (c) => {
+app.post("/api/notion/append", async (c) => {
   try {
     const body = await c.req.json();
     const { text, title, url } = body;
 
     if (!text) {
-      return c.json({ error: 'Text is required' }, 400);
+      return c.json({ error: "Text is required" }, 400);
     }
 
     if (!NOTION_PAGE_ID) {
-      return c.json({ error: 'Notion page ID not configured' }, 500);
+      return c.json({ error: "Notion page ID not configured" }, 500);
     }
 
     // Build blocks array
     const blocks: any[] = [
       {
-        object: 'block',
-        type: 'divider',
+        object: "block",
+        type: "divider",
         divider: {},
       },
     ];
@@ -73,12 +73,12 @@ app.post('/api/notion/append', async (c) => {
     // Add title if provided
     if (title) {
       blocks.push({
-        object: 'block',
-        type: 'heading_2',
+        object: "block",
+        type: "heading_2",
         heading_2: {
           rich_text: [
             {
-              type: 'text',
+              type: "text",
               text: { content: title },
             },
           ],
@@ -88,12 +88,12 @@ app.post('/api/notion/append', async (c) => {
 
     // Add main text content
     blocks.push({
-      object: 'block',
-      type: 'paragraph',
+      object: "block",
+      type: "paragraph",
       paragraph: {
         rich_text: [
           {
-            type: 'text',
+            type: "text",
             text: { content: text },
           },
         ],
@@ -103,16 +103,16 @@ app.post('/api/notion/append', async (c) => {
     // Add source URL if provided
     if (url) {
       blocks.push({
-        object: 'block',
-        type: 'paragraph',
+        object: "block",
+        type: "paragraph",
         paragraph: {
           rich_text: [
             {
-              type: 'text',
-              text: { content: 'Source: ' },
+              type: "text",
+              text: { content: "Source: " },
             },
             {
-              type: 'text',
+              type: "text",
               text: {
                 content: url,
                 link: { url },
@@ -131,17 +131,17 @@ app.post('/api/notion/append', async (c) => {
 
     return c.json({
       success: true,
-      message: 'Content added to Notion',
+      message: "Content added to Notion",
       data: response,
     });
   } catch (error: any) {
-    console.error('Notion API error:', error);
+    console.error("Notion API error:", error);
     return c.json(
       {
-        error: 'Failed to add content to Notion',
+        error: "Failed to add content to Notion",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
@@ -157,7 +157,7 @@ function generateEmailHTML(data: {
   const relatedItemsHTML = relatedArticles
     .map(
       (article, index) => `
-    <div class="relevant-item" ${index === relatedArticles.length - 1 ? 'style="border-bottom: 0"' : ''}>
+    <div class="relevant-item" ${index === relatedArticles.length - 1 ? 'style="border-bottom: 0"' : ""}>
       <div class="thumb">
         <a href="${article.url}">
           <img src="${article.image}" alt="${article.title}" />
@@ -169,13 +169,13 @@ function generateEmailHTML(data: {
         </a>
         <div class="ri-meta">
           ${article.summary} &nbsp;•&nbsp;
-          <span class="muted">${article.author || 'The Hacker News'}</span>
+          <span class="muted">${article.author || "The Hacker News"}</span>
         </div>
       </div>
     </div>
-  `
+  `,
     )
-    .join('');
+    .join("");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -204,7 +204,7 @@ function generateEmailHTML(data: {
               <p class="muted" style="margin-bottom:8px">${breakingArticle.summary}</p>
               <div style="display:flex;gap:8px;align-items:center">
                 <a href="${breakingArticle.url}" class="btn">Read full story</a>
-                <span style="font-size:13px;color:#64748b">&nbsp;•&nbsp;${breakingArticle.source || 'The Hacker News'}</span>
+                <span style="font-size:13px;color:#64748b">&nbsp;•&nbsp;${breakingArticle.source || "The Hacker News"}</span>
               </div>
             </div>
           </a>
@@ -229,12 +229,12 @@ function generateEmailHTML(data: {
 }
 
 // Endpoint to send email briefing
-app.post('/api/email/send', async (c) => {
+app.post("/api/email/send", async (c) => {
   try {
     const body = await c.req.json();
     const { to, breakingArticle, relatedArticles, preheaderText } = body;
 
-    console.log('Received email request:', {
+    console.log("Received email request:", {
       hasTo: !!to,
       hasBreakingArticle: !!breakingArticle,
       hasRelatedArticles: !!relatedArticles,
@@ -242,8 +242,11 @@ app.post('/api/email/send', async (c) => {
 
     if (!to || !breakingArticle || !relatedArticles) {
       return c.json(
-        { error: 'Missing required fields: to, breakingArticle, relatedArticles' },
-        400
+        {
+          error:
+            "Missing required fields: to, breakingArticle, relatedArticles",
+        },
+        400,
       );
     }
 
@@ -251,47 +254,48 @@ app.post('/api/email/send', async (c) => {
     const emailHTML = generateEmailHTML({
       breakingArticle,
       relatedArticles,
-      preheaderText: preheaderText || breakingArticle.summary?.substring(0, 100) || '',
+      preheaderText:
+        preheaderText || breakingArticle.summary?.substring(0, 100) || "",
     });
 
-    console.log('Sending email via Resend');
+    console.log("Sending email via Resend");
 
     // Send email using Resend
     const { data, error } = await resend.emails.send({
-      from: 'Skrati.me <info@mail.skrati-me.com>',
+      from: "Skrati.me <info@mail.skrati-me.com>",
       to: Array.isArray(to) ? to : [to],
       subject: `[Breaking] ${breakingArticle.title} — Top related stories`,
       html: emailHTML,
     });
 
     if (error) {
-      console.error('Resend API error:', error);
-      return c.json({ error: 'Failed to send email', details: error }, 500);
+      console.error("Resend API error:", error);
+      return c.json({ error: "Failed to send email", details: error }, 500);
     }
 
-    console.log('Email sent successfully:', data);
+    console.log("Email sent successfully:", data);
 
     return c.json({
       success: true,
-      message: 'Email sent successfully',
+      message: "Email sent successfully",
       data,
     });
   } catch (error: any) {
-    console.error('Email send error:', error);
+    console.error("Email send error:", error);
     return c.json(
       {
-        error: 'Failed to send email',
+        error: "Failed to send email",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
 
 // Endpoint to fetch and scrape Hacker News RSS feed
-app.get('/api/rss/fetch', async (c) => {
+app.get("/api/rss/fetch", async (c) => {
   try {
-    console.log('Fetching RSS feed from:', RSS_FEED_URL);
+    console.log("Fetching RSS feed from:", RSS_FEED_URL);
 
     // Fetch RSS feed
     const feed = await rssParser.parseURL(RSS_FEED_URL);
@@ -301,14 +305,16 @@ app.get('/api/rss/fetch', async (c) => {
     const articles = await Promise.all(
       feed.items.slice(0, 10).map(async (item) => {
         try {
-          const articleUrl = item.link || '';
+          const articleUrl = item.link || "";
           console.log(`Scraping article: ${articleUrl}`);
 
           // Fetch the article HTML with timeout
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-          const response = await fetch(articleUrl, { signal: controller.signal });
+          const response = await fetch(articleUrl, {
+            signal: controller.signal,
+          });
           clearTimeout(timeoutId);
           const html = await response.text();
 
@@ -316,51 +322,54 @@ app.get('/api/rss/fetch', async (c) => {
           const $ = cheerio.load(html);
 
           // Remove unwanted elements
-          $('.dog_two').remove();
-          $('.separator').remove();
-          $('.cf.note-b').remove();
+          $(".dog_two").remove();
+          $(".separator").remove();
+          $(".cf.note-b").remove();
 
           // Extract article body
-          const articleBody = $('#articlebody');
+          const articleBody = $("#articlebody");
 
           // Get clean text content
-          let bodyText = '';
-          articleBody.find('p, h2, ul, li').each((_, element) => {
+          let bodyText = "";
+          articleBody.find("p, h2, ul, li").each((_, element) => {
             const text = $(element).text().trim();
             if (text) {
-              bodyText += text + ' ';
+              bodyText += text + " ";
             }
           });
 
           // Extract image from article body
-          const firstImage = articleBody.find('img').first();
-          const imageUrl = firstImage.attr('src') || item.enclosure?.url || '';
+          const firstImage = articleBody.find("img").first();
+          const imageUrl = firstImage.attr("src") || item.enclosure?.url || "";
 
           return {
-            title: item.title || '',
+            title: item.title || "",
             link: articleUrl,
-            pubDate: item.pubDate || '',
-            summary: item.contentSnippet?.substring(0, 300) || '',
-            fullContent: bodyText.trim().replace(/\n/g, ' ').replace(/\s+/g, ' '),
+            pubDate: item.pubDate || "",
+            summary: item.contentSnippet?.substring(0, 300) || "",
+            fullContent: bodyText
+              .trim()
+              .replace(/\n/g, " ")
+              .replace(/\s+/g, " "),
             image: imageUrl,
-            author: item.creator || 'The Hacker News',
+            author: item.creator || "The Hacker News",
             categories: item.categories || [],
           };
         } catch (error) {
           console.error(`Error scraping article ${item.link}:`, error);
           return {
-            title: item.title || '',
-            link: item.link || '',
-            pubDate: item.pubDate || '',
-            summary: item.contentSnippet || '',
-            fullContent: '',
-            image: item.enclosure?.url || '',
-            author: item.creator || 'The Hacker News',
+            title: item.title || "",
+            link: item.link || "",
+            pubDate: item.pubDate || "",
+            summary: item.contentSnippet || "",
+            fullContent: "",
+            image: item.enclosure?.url || "",
+            author: item.creator || "The Hacker News",
             categories: item.categories || [],
-            error: 'Failed to scrape article content',
+            error: "Failed to scrape article content",
           };
         }
-      })
+      }),
     );
 
     return c.json({
@@ -371,25 +380,25 @@ app.get('/api/rss/fetch', async (c) => {
       articles,
     });
   } catch (error: any) {
-    console.error('RSS fetch error:', error);
+    console.error("RSS fetch error:", error);
     return c.json(
       {
-        error: 'Failed to fetch RSS feed',
+        error: "Failed to fetch RSS feed",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
 
 // Endpoint to scrape single article
-app.post('/api/rss/scrape', async (c) => {
+app.post("/api/rss/scrape", async (c) => {
   try {
     const body = await c.req.json();
     const { url } = body;
 
     if (!url) {
-      return c.json({ error: 'Article URL is required' }, 400);
+      return c.json({ error: "Article URL is required" }, 400);
     }
 
     console.log(`Scraping single article: ${url}`);
@@ -406,27 +415,33 @@ app.post('/api/rss/scrape', async (c) => {
     const $ = cheerio.load(html);
 
     // Remove unwanted elements
-    $('.dog_two').remove();
-    $('.separator').remove();
-    $('.cf.note-b').remove();
+    $(".dog_two").remove();
+    $(".separator").remove();
+    $(".cf.note-b").remove();
 
     // Extract article body
-    const articleBody = $('#articlebody');
+    const articleBody = $("#articlebody");
 
     // Get clean text content
-    let bodyText = '';
-    articleBody.find('p, h2, ul, li').each((_, element) => {
+    let bodyText = "";
+    articleBody.find("p, h2, ul, li").each((_, element) => {
       const text = $(element).text().trim();
       if (text) {
-        bodyText += text + ' ';
+        bodyText += text + " ";
       }
     });
 
     // Extract metadata
-    const title = $('meta[property="og:title"]').attr('content') || $('title').text();
-    const description = $('meta[property="og:description"]').attr('content') || '';
-    const image = $('meta[property="og:image"]').attr('content') || articleBody.find('img').first().attr('src') || '';
-    const pubDate = $('meta[property="article:published_time"]').attr('content') || '';
+    const title =
+      $('meta[property="og:title"]').attr("content") || $("title").text();
+    const description =
+      $('meta[property="og:description"]').attr("content") || "";
+    const image =
+      $('meta[property="og:image"]').attr("content") ||
+      articleBody.find("img").first().attr("src") ||
+      "";
+    const pubDate =
+      $('meta[property="article:published_time"]').attr("content") || "";
 
     return c.json({
       success: true,
@@ -434,19 +449,19 @@ app.post('/api/rss/scrape', async (c) => {
         title,
         url,
         description,
-        fullContent: bodyText.trim().replace(/\n/g, ' ').replace(/\s+/g, ' '),
+        fullContent: bodyText.trim().replace(/\n/g, " ").replace(/\s+/g, " "),
         image,
         pubDate,
       },
     });
   } catch (error: any) {
-    console.error('Article scrape error:', error);
+    console.error("Article scrape error:", error);
     return c.json(
       {
-        error: 'Failed to scrape article',
+        error: "Failed to scrape article",
         details: error.message,
       },
-      500
+      500,
     );
   }
 });
