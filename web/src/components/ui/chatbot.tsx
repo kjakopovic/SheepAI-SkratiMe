@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Sparkles } from 'lucide-react'
+import { X, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { cn } from '../../lib/utils'
 
@@ -20,7 +20,6 @@ export const Chatbot = () => {
       timestamp: new Date(),
     },
   ])
-  const [inputValue, setInputValue] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -33,17 +32,15 @@ export const Chatbot = () => {
     }
   }, [messages, viewState])
 
-  const options = [
-    'Explain to me like i am 5',
-    'Summarize the article',
-    'why is this article important',
-    'Why is this article relevant?',
-    'Ask me a question'
+  type Option = { id: string; label: string }
+
+  const options: Option[] = [
+    { id: 'flashpoint-10s', label: 'Flashpoint (10 sec)' },
+    { id: 'executive-brief-60s', label: 'Executive brief (60 sec)' },
+    { id: 'balance-check-90s', label: 'Balance check (90 sec)' },
   ]
 
   const handleSendMessage = (text: string) => {
-    if (!text.trim()) return
-
     const newUserMsg: Message = {
       id: Date.now().toString(),
       text,
@@ -52,13 +49,12 @@ export const Chatbot = () => {
     }
 
     setMessages((prev) => [...prev, newUserMsg])
-    setInputValue('')
 
     // Simulate bot response
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: `I'm processing your request for: "${text}". This is a demo response.`,
+        text: `Here is the ${text} you requested. (Backend response placeholder)`,
         isUser: false,
         timestamp: new Date(),
       }
@@ -66,18 +62,9 @@ export const Chatbot = () => {
     }, 1000)
   }
 
-  const handleOptionClick = (opt: string) => {
+  const handleOptionClick = (opt: Option) => {
     setViewState('chat')
-    if (opt !== 'Ask me a question') {
-      handleSendMessage(opt)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage(inputValue)
-    }
+    handleSendMessage(opt.label)
   }
 
   const toggleChat = () => {
@@ -144,23 +131,18 @@ export const Chatbot = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
+            {/* Options Area */}
             <div className="p-3 border-t border-border bg-background">
-              <div className="flex gap-2 items-center bg-muted/30 p-1.5 rounded-xl border border-border/50 focus-within:border-primary/50 focus-within:bg-muted/50 transition-all">
-                <input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask me anything..."
-                  className="flex-1 bg-transparent border-none focus:ring-0 text-sm px-2 py-1 placeholder:text-muted-foreground/70"
-                />
-                <button
-                  onClick={() => handleSendMessage(inputValue)}
-                  disabled={!inputValue.trim()}
-                  className="p-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+              <div className="flex flex-col gap-2">
+                {options.map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => handleOptionClick(opt)}
+                    className="w-full text-left px-4 py-2 text-sm bg-muted/50 hover:bg-muted rounded-lg transition-colors"
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -170,7 +152,7 @@ export const Chatbot = () => {
           <div className="flex flex-col items-end gap-2 mb-2">
             {options.map((opt, i) => (
               <motion.button
-                key={opt}
+                key={opt.id}
                 initial={{ opacity: 0, x: 20, scale: 0.8 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 20, scale: 0.8 }}
@@ -178,7 +160,7 @@ export const Chatbot = () => {
                 onClick={() => handleOptionClick(opt)}
                 className="bg-card border border-border shadow-lg px-4 py-2 rounded-2xl rounded-br-none text-sm font-medium hover:bg-accent hover:scale-105 transition-all"
               >
-                {opt}
+                {opt.label}
               </motion.button>
             ))}
           </div>
@@ -194,7 +176,7 @@ export const Chatbot = () => {
           viewState !== 'closed' ? "bg-muted text-foreground rotate-90" : "bg-primary text-primary-foreground hover:bg-primary/90"
         )}
       >
-        {viewState !== 'closed' ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {viewState !== 'closed' ? <X className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />}
       </motion.button>
     </div>
   )
