@@ -1,0 +1,11 @@
+export type Category =
+  | 'Malware'
+  | 'Phishing'
+  | 'AI Agents'
+  | 'Data Breach'
+  | 'Vulnerability'
+  | 'Social Engineering'
+  | 'Cloud Security'
+  | 'DevSecOps'
+  | 'Zero Trust'
+  | 'Ransomware'
