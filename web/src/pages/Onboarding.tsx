@@ -43,16 +43,16 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const registrationData = location.state?.registrationData;
 
   const categories: Category[] = [
-    'Malware',
-    'Phishing',
-    'AI Agents',
-    'Data Breach',
-    'Vulnerability',
-    'Social Engineering',
-    'Cloud Security',
-    'DevSecOps',
-    'Zero Trust',
-    'Ransomware',
+    'cyber-security',
+    'data-breaches',
+    'malware-alerts',
+    'vulnerability-reports',
+    'privacy-updates',
+    'cloud-security',
+    'devsecops-news',
+    'software-patches',
+    'threat-intel',
+    'network-security',
   ];
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<UserType | null>(null);
@@ -81,8 +81,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     try {
       await api.post('auth', '/register', {
         ...registrationData,
-        user_type: finalUserType,
-        user_interests: finalInterests
+        user_interests: [...finalInterests, finalUserType]
       });
       
       if (onComplete) {
@@ -109,7 +108,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
 
   const handleSkip = () => {
     // Skip implies default values or empty interests
-    submitRegistration('Other', []);
+    submitRegistration(userType || 'Other', []);
   };
 
   const canProceed = () => {
@@ -117,6 +116,13 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
     if (step === 3) return selectedInterests.length > 0;
     return true;
   };
+
+  const formatCategory = (cat: string) => {
+    return cat
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
 
   return (
     <div className="min-h-screen bg-morplo-gray-130 flex flex-col">
@@ -164,7 +170,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                   whileTap={{
                     scale: 0.98,
                   }}
-                  className="px-8 py-4 bg-morplo-blue-100 text-white rounded-xl font-medium text-lg hover:bg-opacity-90 transition-colors"
+                  className="px-8 py-4 bg-morplo-blue-100 text-white rounded-xl font-medium text-lg hover:bg-opacity-90 transition-colors cursor-pointer"
                 >
                   Get started
                 </motion.button>
@@ -215,7 +221,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                         delay: index * 0.05,
                       }}
                       onClick={() => handleUserTypeSelect(type.value)}
-                      className={`p-5 rounded-xl text-left transition-all ${userType === type.value ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
+                      className={`p-5 rounded-xl text-left transition-all cursor-pointer ${userType === type.value ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
                     >
                       <div className="font-semibold mb-1">{type.value}</div>
                       <div
@@ -228,18 +234,6 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                 </div>
 
                 <div className="flex gap-3">
-                  <motion.button
-                    onClick={handleSkip}
-                    whileHover={{
-                      scale: 1.01,
-                    }}
-                    whileTap={{
-                      scale: 0.98,
-                    }}
-                    className="flex-1 px-6 py-3 bg-white text-morplo-gray-600 rounded-xl font-medium hover:bg-morplo-gray-200 transition-colors"
-                  >
-                    Skip
-                  </motion.button>
                   <motion.button
                     onClick={handleNext}
                     disabled={!canProceed()}
@@ -257,7 +251,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                           }
                         : {}
                     }
-                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
+                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors cursor-pointer ${canProceed() ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
                   >
                     Continue
                   </motion.button>
@@ -309,9 +303,9 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                         delay: index * 0.04,
                       }}
                       onClick={() => handleInterestToggle(category)}
-                      className={`p-4 rounded-xl font-medium transition-all ${selectedInterests.includes(category) ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
+                      className={`p-4 rounded-xl font-medium transition-all cursor-pointer ${selectedInterests.includes(category) ? 'bg-morplo-blue-100 text-white shadow-md' : 'bg-white text-morplo-gray-900 hover:shadow-md'}`}
                     >
-                      {category}
+                      {formatCategory(category)}
                     </motion.button>
                   ))}
                 </div>
@@ -326,7 +320,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                     whileTap={{
                       scale: 0.98,
                     }}
-                    className="flex-1 px-6 py-3 bg-white text-morplo-gray-600 rounded-xl font-medium hover:bg-morplo-gray-200 transition-colors"
+                    className="flex-1 px-6 py-3 bg-white text-morplo-gray-600 rounded-xl font-medium hover:bg-morplo-gray-200 transition-colors cursor-pointer"
                   >
                     {isSubmitting ? 'Setting up...' : 'Skip'}
                   </motion.button>
@@ -347,7 +341,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
                           }
                         : {}
                     }
-                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors ${canProceed() && !isSubmitting ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
+                    className={`flex-1 px-6 py-3 rounded-xl font-medium transition-colors cursor-pointer ${canProceed() && !isSubmitting ? 'bg-morplo-blue-100 text-white hover:bg-opacity-90' : 'bg-morplo-gray-200 text-morplo-gray-500 cursor-not-allowed'}`}
                   >
                     {isSubmitting ? 'Completing setup...' : 'Complete setup'}
                   </motion.button>
