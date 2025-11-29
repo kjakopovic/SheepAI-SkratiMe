@@ -75,6 +75,16 @@ class SkratimeauthAuthStack(Stack):
             resources=[user_pool.user_pool_arn],
         )
 
+        # IAM Policy for user profile management Lambda functions
+        cognito_user_policy = iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=[
+                "cognito-idp:AdminGetUser",
+                "cognito-idp:AdminUpdateUserAttributes",
+            ],
+            resources=[user_pool.user_pool_arn],
+        )
+
         # Register User Lambda Function
         register_lambda = _lambda.Function(
             self,
@@ -127,6 +137,63 @@ class SkratimeauthAuthStack(Stack):
         )
         login_lambda.add_to_role_policy(cognito_policy)
 
+        # Update Personal Categories Lambda Function
+        update_personal_categories_lambda = _lambda.Function(
+            self,
+            "UpdatePersonalCategoriesLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="lambda_handler.lambda_handler",
+            code=_lambda.Code.from_asset(
+                "./UpdatePersonalCategories",
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "POWERTOOLS_SERVICE_NAME": "user-profile",
+                "USER_POOL_ID": user_pool.user_pool_id,
+            },
+            timeout=Duration.seconds(30),
+        )
+        update_personal_categories_lambda.add_to_role_policy(cognito_user_policy)
+
+        # Get User Profile Lambda Function
+        get_user_profile_lambda = _lambda.Function(
+            self,
+            "GetUserProfileLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="lambda_handler.lambda_handler",
+            code=_lambda.Code.from_asset(
+                "./GetUserProfile",
+                bundling={
+                    "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
+                },
+            ),
+            environment={
+                "POWERTOOLS_SERVICE_NAME": "user-profile",
+                "USER_POOL_ID": user_pool.user_pool_id,
+            },
+            timeout=Duration.seconds(30),
+        )
+        get_user_profile_lambda.add_to_role_policy(cognito_user_policy)
+
+        # Create Cognito authorizer for protected endpoints
+        cognito_authorizer = apigw.CognitoUserPoolsAuthorizer(
+            self,
+            "SkratimeauthCognitoAuthorizer",
+            cognito_user_pools=[user_pool],
+        )
+
         # API Gateway
         api = apigw.RestApi(
             self,
@@ -145,10 +212,39 @@ class SkratimeauthAuthStack(Stack):
         # API Gateway Integrations
         register_integration = apigw.LambdaIntegration(register_lambda)
         login_integration = apigw.LambdaIntegration(login_lambda)
+        update_personal_categories_integration = apigw.LambdaIntegration(
+            update_personal_categories_lambda
+        )
+        get_user_profile_integration = apigw.LambdaIntegration(get_user_profile_lambda)
 
         # API Gateway Resources and Methods
+        # Public endpoints (no auth required)
         api.root.add_resource("register").add_method("POST", register_integration)
         api.root.add_resource("login").add_method("POST", login_integration)
+
+        # Protected endpoints (Cognito auth required)
+        # User profile resource
+        users_resource = api.root.add_resource("users")
+        me_resource = users_resource.add_resource("me")
+
+        # GET /users/me - Get current user profile
+        me_resource.add_method(
+            "GET",
+            get_user_profile_integration,
+            authorizer=cognito_authorizer,
+            authorization_type=apigw.AuthorizationType.COGNITO,
+        )
+
+        # Personal categories resource
+        personal_categories_resource = me_resource.add_resource("personal-categories")
+
+        # PATCH /users/me/personal-categories - Update personal categories
+        personal_categories_resource.add_method(
+            "PATCH",
+            update_personal_categories_integration,
+            authorizer=cognito_authorizer,
+            authorization_type=apigw.AuthorizationType.COGNITO,
+        )
 
         # Outputs
         CfnOutput(
