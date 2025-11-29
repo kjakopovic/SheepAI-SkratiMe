@@ -1,0 +1,27 @@
+{
+  "languages": {
+    "en-UK": "English",
+    "nb-NO": "Norwegian"
+  },
+  "pages": {
+    "dashboard": "Dashboard",
+    "login": "Login"
+  },
+  "buttons": {
+    "login": "Log In",
+    "register": "Register",
+    "save": "Save",
+    "back": "Back",
+    "continue": "Continue",
+    "start": "Start",
+    "cancel": "Cancel"
+  },
+  "common": {
+    "loading": "Loading...",
+    "noRecords": "No records to display",
+    "or": "or",
+    "other": "Other",
+    "search": "Search",
+    "selectLanguage": "Select language"
+  }
+}

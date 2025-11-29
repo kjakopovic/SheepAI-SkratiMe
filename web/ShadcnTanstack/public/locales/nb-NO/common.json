@@ -1,0 +1,27 @@
+{
+  "languages": {
+    "en-UK": "Engelsk",
+    "nb-NO": "Norsk"
+  },
+  "pages": {
+    "dashboard": "Dashboard",
+    "login": "Logg inn"
+  },
+  "buttons": {
+    "login": "Logg inn",
+    "register": "Registrer deg",
+    "save": "Lagre",
+    "back": "Tilbake",
+    "continue": "Fortsett",
+    "start": "Start",
+    "cancel": "Avbryt"
+  },
+  "common": {
+    "loading": "Laster...",
+    "noRecords": "Ingen poster å vise",
+    "or": "eller",
+    "other": "Annet",
+    "search": "Søk",
+    "selectLanguage": "Velg språk"
+  }
+}

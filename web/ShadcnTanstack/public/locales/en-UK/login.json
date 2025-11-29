@@ -1,0 +1,28 @@
+{
+  "title": "Sign In",
+  "subtitle": "Please sign in to continue your journey!",
+  "newUser": "Don't have an account? Contact us at ",
+  "createAccount": "info@morplo.co",
+  "signUp": "Sign Up",
+  "signIn": "Sign In",
+  "forgotPassword": "Forgot password",
+  "forms": {
+    "data": {
+      "label": {
+        "email": "E-mail",
+        "password": "Password"
+      },
+      "placeholder": {
+        "email": "Enter your E-mail",
+        "password": "Enter your password"
+      }
+    },
+    "validation": {
+      "email": "E-mail is not valid",
+      "required": {
+        "email": "E-mail is required",
+        "password": "Password is required"
+      }
+    }
+  }
+}

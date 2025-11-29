@@ -1,0 +1,28 @@
+{
+  "title": "Logg på",
+  "subtitle": "Vennligst logg på for å fortsette reisen!",
+  "newUser": "Har du ikke en konto? Kontakt oss på ",
+  "createAccount": "info@morplo.co",
+  "signUp": "Registrer deg",
+  "signIn": "Logg på",
+  "forgotPassword": "Glemt passord",
+  "forms": {
+    "data": {
+      "label": {
+        "email": "E-post",
+        "password": "Passord"
+      },
+      "plassholder": {
+        "email": "Skriv inn din e-post",
+        "password": "Skriv inn passordet ditt"
+      }
+    },
+    "validering": {
+      "email": "E-post er ikke gyldig",
+      "required": {
+        "email": "E-post kreves",
+        "password": "Passord kreves"
+      }
+    }
+  }
+}
