@@ -1,9 +1,6 @@
-import { paths } from '@/old-template/common/constants';
+import paths from '@/constants/paths';
 
-import { lazyImport } from '@/lib/lazyImport';
-
-const { Login } = lazyImport(() => import('@/old-template/features/auth'), 'Login');
-const { Dashboard } = lazyImport(() => import('@/old-template/features/dashboard'), 'Dashboard');
+import Login from '@/components/auth/Login';
 
 const routes: Route[] = [
   {
@@ -11,12 +8,6 @@ const routes: Route[] = [
     path: paths.LOGIN,
     component: Login,
     isProtected: false,
-  },
-  {
-    name: 'pages.dashboard',
-    path: paths.DASHBOARD,
-    component: Dashboard,
-    isProtected: true,
   },
 ];
 

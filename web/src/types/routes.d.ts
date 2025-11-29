@@ -1,6 +1,6 @@
 import { ComponentType } from 'react';
 
-import { RoleTypes } from '@/old-template/features/auth';
+import { RoleTypes } from '@/constants';
 
 export {};
 

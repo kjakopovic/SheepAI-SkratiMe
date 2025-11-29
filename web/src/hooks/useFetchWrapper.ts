@@ -2,15 +2,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import paths from '@/constants/paths';
+import { ServerError } from '@/errors/ServerError';
 import ky, { KyResponse, Options } from 'ky';
 import { useNavigate } from 'react-router-dom';
 
 import { useUserContext } from '@/context/UserContext';
 
 import config from '@/config';
-
-import { paths } from '@/old-template/common/constants';
-import { ServerError } from '@/old-template/common/errors/ServerError';
 
 const useFetchWrapper = () => {
   const navigate = useNavigate();
