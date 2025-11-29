@@ -3,13 +3,13 @@ import { CheckCircleIcon, Bookmark } from 'lucide-react'
 import { Article } from '../../types'
 import { cn } from '../../lib/utils'
 import { useToggleBookmark } from '../../hooks/useBookmarks'
+import { CATEGORIES } from '../../data/categories'
 
 interface ArticleCardProps {
   article: Article
   onClick: () => void
   viewMode?: 'list' | 'grid'
 }
-
 
 const sendBriefingEmail = async () => {
   const response = await fetch('https://sheep-ai-skrati-me-bmxo.vercel.app/api/email/send', {
@@ -55,6 +55,14 @@ const sendBriefingEmail = async () => {
   const result = await response.json();
   console.log(result);
 };
+
+const formatCategoryName = (name: string) => {
+  return name
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export function ArticleCard({
   article,
   onClick,
@@ -69,6 +77,13 @@ export function ArticleCard({
     return 'var(--color-morplo-gray-600)'
   }
   const relevanceColor = getRelevanceColor(article.relevanceScore)
+  
+  // Get category names from IDs
+  const articleCategories = article.category.map(catId => {
+    const category = CATEGORIES.find(c => c.id === catId);
+    return category ? category.name : null;
+  }).filter(Boolean);
+
   return (
     <article
       onClick={onClick}
@@ -127,6 +142,19 @@ export function ArticleCard({
             <span>•</span>
             <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
           </div>
+          
+          {/* Categories */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {articleCategories.map((catName, index) => (
+              <span 
+                key={index} 
+                className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md font-medium"
+              >
+                {formatCategoryName(catName as string)}
+              </span>
+            ))}
+          </div>
+
           <p className="text-morplo-gray-700 mb-4 line-clamp-2 leading-relaxed flex-1">
             {article.aiSummary}
           </p>

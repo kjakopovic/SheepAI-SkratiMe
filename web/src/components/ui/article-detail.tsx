@@ -2,10 +2,20 @@ import React, { useEffect } from 'react'
 import { XIcon, ExternalLinkIcon } from 'lucide-react'
 import { Article } from '../../types'
 import { CredibilityPanel } from './credibility-panel'
+import { CATEGORIES } from '../../data/categories'
+
 interface ArticleDetailProps {
   article: Article
   onClose: () => void
 }
+
+const formatCategoryName = (name: string) => {
+  return name
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }) => {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -13,6 +23,12 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // Get category names from IDs
+  const articleCategories = article.category.map(catId => {
+    const category = CATEGORIES.find(c => c.id === catId);
+    return category ? category.name : null;
+  }).filter(Boolean);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-end">
@@ -66,6 +82,17 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="col-span-1 md:col-span-2 space-y-6">
               <div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {articleCategories.map((catName, index) => (
+                    <span 
+                      key={index} 
+                      className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-md font-medium uppercase tracking-wide"
+                    >
+                      {formatCategoryName(catName as string)}
+                    </span>
+                  ))}
+                </div>
+
                 <h1 className="text-2xl md:text-3xl font-bold text-(--text-primary) mb-6 leading-tight">
                   {article.title}
                 </h1>
