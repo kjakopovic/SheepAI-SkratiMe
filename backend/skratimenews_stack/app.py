@@ -33,13 +33,13 @@ class SkratimenewsStack(Stack):
         )
 
         # === DynamoDB Table for User Bookmarks ===
-        # bookmarks_table = dynamodb.Table(
-        #     self,
-        #     "UserBookmarksTable",
-        #     partition_key={"name": "user_id", "type": dynamodb.AttributeType.STRING},
-        #     billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-        #     removal_policy=RemovalPolicy.DESTROY,
-        # )
+        bookmarks_table = dynamodb.Table(
+            self,
+            "UserBookmarksTable",
+            partition_key={"name": "user_id", "type": dynamodb.AttributeType.STRING},
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
 
         # === GSI: news-category-index ===
         table.add_global_secondary_index(
@@ -320,6 +320,49 @@ class SkratimenewsStack(Stack):
         )
 
         rule.add_target(targets.LambdaFunction(rss_lambda))
+
+        # === Bookmarks lambdas ===
+        for op in ["add", "remove", "get"]:
+            env_vars = {
+                "BOOKMARKS_TABLE_NAME": bookmarks_table.table_name,
+            }
+
+            fn = _lambda.Function(
+                self,
+                f"{op.capitalize()}BookmarkLambda",
+                runtime=_lambda.Runtime.PYTHON_3_12,
+                handler=f"{op}_bookmark.handler",
+                code=_lambda.Code.from_asset(
+                    os.path.join("lambdas"),
+                    bundling={
+                        "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
+                        "command": [
+                            "bash",
+                            "-c",
+                            "pip install pynamodb pydantic aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                        ],
+                    },
+                ),
+                environment=env_vars,
+            )
+
+            bookmarks_table.grant_read_write_data(fn)
+
+            # Add API Gateway methods for bookmarks
+            if op == "get":
+                method = "GET"
+            elif op == "remove":
+                method = "DELETE"
+            else:
+                method = "POST"
+
+            bookmark_resource = api.root.add_resource("bookmarks")
+            bookmark_resource.add_method(
+                method,
+                apigateway.LambdaIntegration(fn),
+                authorizer=auth,
+                authorization_type=apigateway.AuthorizationType.COGNITO,
+            )
 
 
 app = App()
