@@ -25,17 +25,44 @@ export function ArticleCard({
     return 'var(--color-morplo-gray-600)'
   }
   const relevanceColor = getRelevanceColor(article.relevanceScore)
+
+  const formatCategoryName = (name: string) => {
+  return name
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
   
+  const CARD_COLORS: Record<string, string> = {
+    'breaking-news': 'bg-red-50 hover:bg-red-100/80 border-red-100',
+    'malware-alerts': 'bg-orange-50 hover:bg-orange-100/80 border-orange-100',
+    'vulnerability-reports': 'bg-yellow-50 hover:bg-yellow-100/80 border-yellow-100',
+    'cyber-security': 'bg-blue-50 hover:bg-blue-100/80 border-blue-100',
+    'cloud-security': 'bg-sky-50 hover:bg-sky-100/80 border-sky-100',
+    'network-security': 'bg-indigo-50 hover:bg-indigo-100/80 border-indigo-100',
+    'privacy-updates': 'bg-purple-50 hover:bg-purple-100/80 border-purple-100',
+    'threat-intel': 'bg-slate-50 hover:bg-slate-100/80 border-slate-100',
+    'devsecops-news': 'bg-emerald-50 hover:bg-emerald-100/80 border-emerald-100',
+    'software-patches': 'bg-green-50 hover:bg-green-100/80 border-green-100',
+    'default': 'bg-white hover:shadow-md border-transparent'
+  };
+
   // Get category names from IDs
   const articleCategories = article.category.map(catId => {
     const category = CATEGORIES.find(c => c.id === catId);
     return category ? category.name : null;
   }).filter(Boolean);
 
+  const primaryCategory = articleCategories[0] as string;
+  const cardStyle = CARD_COLORS[primaryCategory] || CARD_COLORS['default'];
+
   return (
     <article
       onClick={onClick}
-      className="bg-white rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
+      className={cn(
+        "rounded-xl p-4 md:p-6 transition-all cursor-pointer h-full flex flex-col border",
+        cardStyle
+      )}
     >
       <div
         className={cn(
@@ -93,34 +120,23 @@ export function ArticleCard({
           
           {/* Categories */}
           <div className="flex flex-wrap gap-2 mb-3">
-            {articleCategories.map((catName, index) => (
-              <span 
-                key={index} 
-                className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-md font-medium"
-              >
-                {formatCategoryName(catName as string)}
-              </span>
-            ))}
+            {articleCategories.map((catName, index) => {
+              return (
+                <span 
+                  key={index} 
+                  className="px-2 py-0.5 text-xs rounded-md font-medium bg-white/60 border border-black/5 text-gray-700"
+                >
+                  {formatCategoryName(catName as string)}
+                </span>
+              );
+            })}
           </div>
 
           <p className="text-morplo-gray-700 mb-4 line-clamp-2 leading-relaxed flex-1">
             {article.aiSummary}
           </p>
           <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-morplo-gray-600">Relevance</span>
-              <div
-                className="px-2 py-1 rounded-md text-xs font-medium"
-                style={{
-                  color: relevanceColor,
-                  backgroundColor: `${relevanceColor}15`,
-                }}
-              >
-                {article.relevanceScore}%
-              </div>
-            </div>
             <span className="text-sm text-morplo-blue-100">Read more →</span>
-
           </div>
         </div>
       </div>
