@@ -1,0 +1,108 @@
+name: Deploy backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy_backend.yaml"
+
+env:
+  BACKEND_PATH: backend
+  AUTH_PATH: backend/skratimeauth_auth_stack
+  NEWS_CATEGORIES_PATH: backend/skratimenews_stack
+  awsRegion: "eu-central-1"
+  userPoolId: ${{ secrets.USER_POOL_ID }}
+
+jobs:
+  filter:
+    runs-on: ubuntu-latest
+    outputs:
+      skratimeauth_auth_stack: ${{ steps.filter.outputs.skratimeauth_auth_stack }}
+      skratimenews_stack: ${{ steps.filter.outputs.skratimenews_stack }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Filter folder changes
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          filters: |
+            skratimeauth_auth_stack:
+              - 'backend/skratimeauth_auth_stack/**'
+            skratimenews_stack:
+              - 'backend/skratimenews_stack/**'
+
+  deploy_auth:
+    runs-on: ubuntu-latest
+    needs: filter
+    if: ${{ needs.filter.outputs.skratimeauth_auth_stack == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "24"
+
+      - name: Install Python packages
+        run: pip install boto3 aws-cdk-lib constructs dotenv
+        shell: bash
+
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Set up AWS CLI
+        uses: ./.github/composite/aws_setup
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ env.awsRegion }}
+
+      - name: Deploy Service
+        working-directory: ${{ env.AUTH_PATH }}
+        run: cdk synth
+
+  deploy_news_categories:
+    runs-on: ubuntu-latest
+    needs: filter
+    if: ${{ needs.filter.outputs.skratimenews_stack == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "24"
+
+      - name: Install Python packages
+        run: pip install boto3 aws-cdk-lib constructs dotenv
+        shell: bash
+
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Set up AWS CLI
+        uses: ./.github/composite/aws_setup
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ env.awsRegion }}
+
+      - name: Deploy Service
+        working-directory: ${{ env.NEWS_CATEGORIES_PATH }}
+        run: cdk synth
