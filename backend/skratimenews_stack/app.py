@@ -23,6 +23,16 @@ class SkratimenewsStack(Stack):
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
         )
 
+        # === GSI: news-category-index ===
+        table.add_global_secondary_index(
+            index_name="news-category-index",
+            partition_key=dynamodb.Attribute(
+                name="category_id",
+                type=dynamodb.AttributeType.STRING,
+            ),
+            projection_type=dynamodb.ProjectionType.ALL,
+        )
+
         # === Lambda Functions ===
 
         # Import existing Cognito User Pool

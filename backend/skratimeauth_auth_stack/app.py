@@ -1,5 +1,6 @@
 from aws_cdk import (
-    App, Stack,
+    App,
+    Stack,
     CfnOutput,
     Duration,
     RemovalPolicy,
@@ -9,6 +10,7 @@ from aws_cdk import (
     aws_iam as iam,
 )
 from constructs import Construct
+
 
 class SkratimeauthAuthStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -29,6 +31,17 @@ class SkratimeauthAuthStack(Stack):
                 require_digits=True,
                 require_symbols=False,
             ),
+            custom_attributes={
+                "personal_categories": cognito.StringAttribute(
+                    mutable=True, min_len=1, max_len=2048
+                ),
+                "notion_link": cognito.StringAttribute(
+                    mutable=True, min_len=1, max_len=2048
+                ),
+                "user_interests": cognito.StringAttribute(
+                    mutable=True, min_len=1, max_len=2048
+                ),
+            },
             standard_attributes=cognito.StandardAttributes(
                 email=cognito.StandardAttribute(required=True, mutable=True),
             ),
@@ -72,7 +85,11 @@ class SkratimeauthAuthStack(Stack):
                 "./Register",
                 bundling={
                     "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
-                    "command": ["bash", "-c", "pip install aws-lambda-powertools -t /asset-output && cp -r . /asset-output"],
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
                 },
             ),
             environment={
@@ -94,7 +111,11 @@ class SkratimeauthAuthStack(Stack):
                 "./Login",
                 bundling={
                     "image": _lambda.Runtime.PYTHON_3_12.bundling_image,
-                    "command": ["bash", "-c", "pip install aws-lambda-powertools -t /asset-output && cp -r . /asset-output"],
+                    "command": [
+                        "bash",
+                        "-c",
+                        "pip install aws-lambda-powertools -t /asset-output && cp -r . /asset-output",
+                    ],
                 },
             ),
             environment={
@@ -113,9 +134,7 @@ class SkratimeauthAuthStack(Stack):
             rest_api_name="Skratimeauth Auth API",
             description="Skratimeauth Authentication Services API",
             deploy=True,
-            deploy_options=apigw.StageOptions(
-                stage_name="auth"
-            ),
+            deploy_options=apigw.StageOptions(stage_name="auth"),
             default_cors_preflight_options=apigw.CorsOptions(
                 allow_origins=apigw.Cors.ALL_ORIGINS,
                 allow_methods=apigw.Cors.ALL_METHODS,
@@ -144,7 +163,7 @@ class SkratimeauthAuthStack(Stack):
             "UserPoolId",
             description="User Pool ID for Skratimeauth",
             value=user_pool.user_pool_id,
-            export_name="SkratimeauthUserPoolId"
+            export_name="SkratimeauthUserPoolId",
         )
 
         CfnOutput(
