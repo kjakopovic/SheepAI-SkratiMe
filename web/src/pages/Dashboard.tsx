@@ -36,7 +36,7 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        to: 'marin.ivosevic91@gmail.com',
+        to: 'hi@leonard.solutions',
         subject: 'BREAKING NEWS BRIEFING',
 
         breakingArticle: {
@@ -119,6 +119,9 @@ export function Dashboard({ onSettingsClick }: DashboardProps) {
           hasAudio: false,
           content: item.summary,
           imageUrl: item.picture_url,
+          fullContent: item.full_article,
+          linkToArticle: item.news_link,
+
         }))
         setArticles(mappedArticles)
       } catch (error) {

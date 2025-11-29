@@ -67,7 +67,7 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }
             </div>
 
             <a
-              href={article.sourceUrl}
+              href={article.linkToArticle}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 text-sm font-medium text-morplo-blue-100 hover:bg-morplo-gray-130 rounded-lg transition-colors flex items-center gap-2"
@@ -84,8 +84,8 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }
               <div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {articleCategories.map((catName, index) => (
-                    <span 
-                      key={index} 
+                    <span
+                      key={index}
                       className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-md font-medium uppercase tracking-wide"
                     >
                       {formatCategoryName(catName as string)}
@@ -117,20 +117,19 @@ export const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onClose }
                 </div>
 
                 <div className="prose prose-lg max-w-none">
-                  <p className="text-morplo-gray-700 leading-relaxed">
-                    {article.content}
-                  </p>
-                  <p className="text-morplo-gray-700 leading-relaxed mt-6">
-                    This is a demonstration of the article detail view. In a
-                    production environment, this would display the full article
-                    content with proper formatting, images, and embedded media.
-                  </p>
-                  <p className="text-morplo-gray-700 leading-relaxed mt-6">
-                    The system analyzes articles for credibility and bias to
-                    help you make informed decisions about the content you
-                    consume. These metrics are displayed in the sidebar for easy
-                    reference.
-                  </p>
+                  {article.fullContent ? (
+                    article.fullContent.split('\n').map((paragraph, index) => (
+                      paragraph.trim() && (
+                        <p key={index} className="text-morplo-gray-700 leading-relaxed mb-4">
+                          {paragraph}
+                        </p>
+                      )
+                    ))
+                  ) : (
+                    <p className="text-morplo-gray-700 leading-relaxed">
+                      {article.content}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

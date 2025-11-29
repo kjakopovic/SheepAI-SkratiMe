@@ -36,6 +36,8 @@ export interface Article {
   hasAudio: boolean
   content: string
   imageUrl?: string
+  fullContent: string
+  linkToArticle: string
 }
 
 export interface UserStats {
