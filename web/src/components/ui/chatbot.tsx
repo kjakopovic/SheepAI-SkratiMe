@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { X, Sparkles, Loader2 } from 'lucide-react'
+import { X, Sparkles, Loader2, Share, Check } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { cn } from '../../lib/utils'
+import { exportToNotion } from '../../services/notion'
 
 // --- PROMPT VARIABLES ---
 // Update these prompts to change the personality/output of the modes
@@ -42,21 +43,13 @@ const PROMPT_TEMPLATES = {
     Text to summarize:
   `,
   'balance-check-90s': `
-    You are in Balance Check Mode.
-    Your job is to read the provided news article (including title, text, and optional summary) and extract the core arguments from all major perspectives on the issue.
-
-    Return the output in the following exact structure:
-
-    1. PRO Perspective: A concise list of the strongest arguments supporting the news, decision, or development.  
-    2. CON Perspective: A concise list of the strongest arguments opposing or criticizing the news, decision, or development.  
-    3. NEUTRAL Perspective: A concise list of context-setting or fact-based points that do not take sides but clarify the situation.
-
-    Rules:
-    - Each perspective should contain 3–6 bullet points.
-    - Arguments must be factual, balanced, and free of personal opinions.
-    - Do not fabricate arguments not supported by the article or widely documented context.
-    - Do not provide analysis outside the three structured sections.
-    - No introductions or conclusions—only the three labeled blocks.
+    You are an objective media analyst and fact-checker.
+    Task: Analyze the following text for bias and perspective.
+    Format:
+    1. Identify the primary angle/bias of the article.
+    2. List any missing perspectives or counter-arguments.
+    3. Rate the objectivity (Low/Medium/High) with a brief explanation.
+    Tone: Neutral, analytical, fair.
     Text to summarize:
   `
 }
@@ -66,6 +59,8 @@ interface Message {
   text: string
   isUser: boolean
   timestamp: Date
+  isExporting?: boolean
+  isExported?: boolean
 }
 
 interface ChatbotProps {
@@ -137,6 +132,27 @@ export const Chatbot = ({ articleContext }: ChatbotProps) => {
     } catch (error) {
       console.error("Network Error:", error);
       return "Connection error. Please check your internet connection.";
+    }
+  };
+
+  const handleExportMessage = async (msgId: string, text: string) => {
+    // Update state to loading
+    setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isExporting: true } : m));
+
+    try {
+      await exportToNotion({text, title: "AI Chat Insight", url: "http://skrati.me/dashboard"});
+      
+      // Update state to success
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isExporting: false, isExported: true } : m));
+      
+      // Reset success state after 2 seconds
+      setTimeout(() => {
+        setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isExported: false } : m));
+      }, 2000);
+
+    } catch (error) {
+      console.error("Failed to export message", error);
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, isExporting: false } : m));
     }
   };
 
@@ -225,8 +241,8 @@ export const Chatbot = ({ articleContext }: ChatbotProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   key={msg.id}
                   className={cn(
-                    'flex w-full',
-                    msg.isUser ? 'justify-end' : 'justify-start',
+                    'flex w-full flex-col',
+                    msg.isUser ? 'items-end' : 'items-start',
                   )}
                 >
                   <div
@@ -239,6 +255,27 @@ export const Chatbot = ({ articleContext }: ChatbotProps) => {
                   >
                     {msg.text}
                   </div>
+                  
+                  {!msg.isUser && msg.id !== '1' && (
+                    <button 
+                      onClick={() => handleExportMessage(msg.id, msg.text)}
+                      disabled={msg.isExporting || msg.isExported}
+                      className="mt-1 ml-2 text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      {msg.isExporting ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : msg.isExported ? (
+                        <Check className="w-3 h-3 text-green-500" />
+                      ) : (
+                        <Share className="w-3 h-3" />
+                      )}
+                      {msg.isExporting
+                        ? ' Exporting...'
+                        : msg.isExported
+                        ? ' Exported!'
+                        : ' Export to Notion'}
+                    </button>
+                  )}
                 </motion.div>
               ))}
               
@@ -294,18 +331,16 @@ export const Chatbot = ({ articleContext }: ChatbotProps) => {
           </div>
         )}
       </AnimatePresence>
-
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={toggleChat}
-        className={cn(
-          "h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 z-50 cursor-pointer",
-          viewState !== 'closed' ? "bg-muted text-foreground rotate-90" : "bg-primary text-primary-foreground hover:bg-primary/90"
-        )}
+        className="bg-primary text-primary-foreground p-4 rounded-full shadow-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
       >
-        {viewState !== 'closed' ? <X className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />}
-      </motion.button>
+        {viewState === 'closed' ? (
+          <Sparkles className="w-6 h-6" />
+        ) : (
+          <X className="w-6 h-6" />
+        )}
+      </button>
     </div>
   )
 }
