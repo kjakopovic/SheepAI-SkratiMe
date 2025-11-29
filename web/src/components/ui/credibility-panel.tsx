@@ -1,6 +1,7 @@
 import React from 'react'
 import { ShieldCheckIcon, TrendingUpIcon } from 'lucide-react'
 import { Article } from '../../types'
+import { Chatbot } from './chatbot'
 interface CredibilityPanelProps {
   article: Article
 }
@@ -102,7 +103,9 @@ export function CredibilityPanel({ article }: CredibilityPanelProps) {
             Analysis based on language patterns and framing choices in the
             article.
           </p>
+          <Chatbot />
         </div>
+
       </div>
     </div>
   )

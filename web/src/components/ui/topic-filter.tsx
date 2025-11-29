@@ -100,7 +100,7 @@ export const TopicFilter = ({
                 key={category}
                 onClick={() => onToggleCategory(category)}
                 className={cn(
-                  'group flex items-center justify-center px-2 py-2 rounded-lg text-xs font-medium transition-all duration-200 border border-transparent text-center h-10 md:h-24 md:flex-col md:gap-2',
+                  'group flex items-center justify-center px-4 py-4 rounded-lg text-xs font-medium transition-all duration-200 border border-transparent text-center h-10 md:h-24 md:flex-col md:gap-2',
                   isSelected
                     ? 'bg-blue-500 text-primary-foreground shadow-md shadow-primary/20 border-primary/10'
                     : 'bg-card hover:bg-accent hover:text-accent-foreground border-border/50 hover:border-border',
