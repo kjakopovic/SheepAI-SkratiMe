@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Bug,
   Fish,
@@ -15,6 +15,7 @@ import {
   Eye,
   Cpu,
   Globe,
+  Zap,
 } from 'lucide-react'
 import { Category } from '../../types'
 import { cn } from '../../lib/utils'
@@ -26,6 +27,7 @@ interface TopicFilterProps {
 }
 
 const categoryIcons: Record<string, React.ElementType> = {
+  'breaking-news': Zap,
   'malware-alerts': Bug,
   'phishing': Fish,
   'ai-agents': Bot,
@@ -43,8 +45,13 @@ const categoryIcons: Record<string, React.ElementType> = {
   'network-security': Network,
 }
 
-const formatCategoryName = (category: string) => {
-  return category
+const formatCategoryName = (input: string | Category) => {
+  // Handle both string and Category object to prevent crashes
+  const name = typeof input === 'string' ? input : input?.name;
+  
+  if (!name || typeof name !== 'string') return '';
+
+  return name
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
@@ -55,20 +62,18 @@ export const TopicFilter = ({
   selectedCategories,
   onToggleCategory,
 }: TopicFilterProps) => {
-  const [activeTab, setActiveTab] = React.useState<'personal' | 'trending'>(
-    'personal',
+  const [activeTab, setActiveTab] = useState<'personal' | 'trending'>('personal')
+
+  // Filter out unwanted categories
+  const currentTopics = categories.filter(
+    (cat) => cat.name !== 'networ' && cat.name !== 'uncategorised'
   )
 
-  const personalTopics = categories.slice(0, Math.ceil(categories.length / 2))
-  const trendingTopics = categories.slice(Math.ceil(categories.length / 2))
-  const currentTopics =
-    activeTab === 'personal' ? personalTopics : trendingTopics
-
   return (
-    <div className="w-full md:w-72 bg-card/50 backdrop-blur-xl border-b md:border-b-0 md:border-r border-border md:h-screen flex-shrink-0">
-      <div className="p-4 md:p-6 h-full flex flex-col">
-        <div className="space-y-4 mb-6">
-          <div className="flex p-1 bg-muted/50 rounded-xl w-full">
+    <div className="w-full md:w-64 bg-background border-b md:border-b-0 md:border-r border-border h-full flex flex-col">
+      <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
+        <div className="flex flex-col gap-4">
+          <div className="flex p-1 bg-muted/50 rounded-xl">
             <button
               onClick={() => setActiveTab('personal')}
               className={cn(
@@ -109,11 +114,11 @@ export const TopicFilter = ({
 
         <div className="grid grid-cols-2 gap-2 md:overflow-y-auto pb-4 md:pb-0 scrollbar-thin content-start">
           {currentTopics.map((category) => {
-            const isSelected = selectedCategories.includes(category)
-            const Icon = categoryIcons[category] || Hash
+            const isSelected = selectedCategories.some(c => c.id === category.id)
+            const Icon = categoryIcons[category.name] || Hash
             return (
               <button
-                key={category}
+                key={category.id}
                 onClick={() => onToggleCategory(category)}
                 className={cn(
                   'group flex items-center justify-center px-2 py-2 rounded-lg text-xs font-medium transition-all duration-200 border border-transparent text-center h-10 md:h-24 md:flex-col md:gap-2 cursor-pointer',

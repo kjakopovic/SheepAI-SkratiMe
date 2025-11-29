@@ -23,7 +23,7 @@ export function CredibilityPanel({ article }: CredibilityPanelProps) {
       await exportToNotion({
         text: article.aiSummary,
         title: article.title,
-        url: article.sourceUrl
+        url: 'https://example.com/article/',
     });
       alert('Successfully exported to Notion!');
     } catch (error) {
