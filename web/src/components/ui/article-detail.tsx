@@ -20,21 +20,21 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-4xl h-full bg-[var(--bg-secondary)] overflow-y-auto scrollbar-thin animate-slide-in">
-        <div className="sticky top-0 z-10 bg-white border-b border-[var(--border-subtle)] px-8 py-4">
+      <div className="relative w-full max-w-4xl h-full bg-morplo-gray-130 overflow-y-auto scrollbar-thin animate-slide-in">
+        <div className="sticky top-0 z-10 bg-white border-b border-morplo-gray-200 px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+                className="p-2 rounded-lg hover:bg-morplo-gray-130 transition-colors"
               >
-                <XIcon className="w-5 h-5 text-[var(--text-secondary)]" />
+                <XIcon className="w-5 h-5 text-morplo-gray-600" />
               </button>
               <div>
-                <div className="text-sm font-medium text-[var(--text-primary)]">
+                <div className="text-sm font-medium text-morplo-gray-900">
                   {article.source}
                 </div>
-                <div className="text-sm text-[var(--text-secondary)]">
+                <div className="text-sm text-morplo-gray-600">
                   {new Date(article.publishedAt).toLocaleDateString()}
                 </div>
               </div>
@@ -44,7 +44,7 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
               href={article.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 text-sm font-medium text-[var(--accent-blue)] hover:bg-[var(--bg-secondary)] rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium text-morplo-blue-100 hover:bg-morplo-gray-130 rounded-lg transition-colors flex items-center gap-2"
             >
               View original
               <ExternalLinkIcon className="w-4 h-4" />
@@ -56,7 +56,7 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
           <div className="grid grid-cols-3 gap-8">
             <div className="col-span-2 space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
+                <h1 className="text-3xl font-bold text-morplo-gray-900 mb-6 leading-tight">
                   {article.title}
                 </h1>
 
@@ -70,25 +70,25 @@ export function ArticleDetail({ article, onClose }: ArticleDetailProps) {
                   </div>
                 )}
 
-                <div className="bg-[var(--bg-tertiary)] border-l-4 border-[var(--accent-blue)] p-6 rounded-r-lg mb-8">
-                  <div className="text-xs font-semibold text-[var(--accent-blue)] mb-2 uppercase tracking-wide">
+                <div className="bg-morplo-gray-150 border-l-4 border-morplo-blue-100 p-6 rounded-r-lg mb-8">
+                  <div className="text-xs font-semibold text-morplo-blue-100 mb-2 uppercase tracking-wide">
                     Summary
                   </div>
-                  <p className="text-[var(--text-primary)] leading-relaxed">
+                  <p className="text-morplo-gray-900 leading-relaxed">
                     {article.aiSummary}
                   </p>
                 </div>
 
                 <div className="prose prose-lg max-w-none">
-                  <p className="text-[var(--text-secondary)] leading-relaxed">
+                  <p className="text-morplo-gray-700 leading-relaxed">
                     {article.content}
                   </p>
-                  <p className="text-[var(--text-secondary)] leading-relaxed mt-6">
+                  <p className="text-morplo-gray-700 leading-relaxed mt-6">
                     This is a demonstration of the article detail view. In a
                     production environment, this would display the full article
                     content with proper formatting, images, and embedded media.
                   </p>
-                  <p className="text-[var(--text-secondary)] leading-relaxed mt-6">
+                  <p className="text-morplo-gray-700 leading-relaxed mt-6">
                     The system analyzes articles for credibility and bias to
                     help you make informed decisions about the content you
                     consume. These metrics are displayed in the sidebar for easy

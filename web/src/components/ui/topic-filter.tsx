@@ -12,9 +12,9 @@ export function TopicFilter({
   onToggleCategory,
 }: TopicFilterProps) {
   return (
-    <div className="w-64 bg-white border-r border-[var(--border-subtle)] h-full overflow-y-auto scrollbar-thin">
+    <div className="w-64 bg-white border-r border-morplo-gray-200 h-full overflow-y-auto scrollbar-thin">
       <div className="p-6">
-        <h2 className="text-sm font-semibold text-[var(--text-primary)] mb-4">
+        <h2 className="text-sm font-semibold text-morplo-gray-900 mb-4">
           Topics
         </h2>
 
@@ -23,7 +23,7 @@ export function TopicFilter({
             onClick={() =>
               selectedCategories.forEach((cat) => onToggleCategory(cat))
             }
-            className="w-full mb-4 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="w-full mb-4 px-3 py-2 text-sm text-morplo-gray-600 hover:text-morplo-gray-900 transition-colors"
           >
             Clear all
           </button>
@@ -36,7 +36,7 @@ export function TopicFilter({
               <button
                 key={category}
                 onClick={() => onToggleCategory(category)}
-                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${isSelected ? 'bg-[var(--accent-blue)] text-white' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'}`}
+                className={`w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${isSelected ? 'bg-morplo-blue-100 text-white' : 'text-morplo-gray-600 hover:bg-morplo-gray-130'}`}
               >
                 {category}
               </button>
