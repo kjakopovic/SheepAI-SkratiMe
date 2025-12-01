@@ -40,6 +40,7 @@ Instead of static articles, every piece of content comes with an on-demand AI an
 - **Auth:** AWS Cognito (Secure identity management)
 - **Storage:** S3 (Audio assets)
 - **IaC:** AWS CDK
+
 ![skratime](https://github.com/user-attachments/assets/e87f4dd2-a9c1-440a-babb-ce1a863dc258)
 
 ### Frontend Experience (`web`)
