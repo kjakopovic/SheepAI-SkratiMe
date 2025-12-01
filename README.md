@@ -6,6 +6,10 @@ Skrati.me is a next-generation news intelligence platform designed for busy prof
 
 Users don't just "read" news; they interact with it—getting instant summaries, bias checks, and executive briefings, all integrated seamlessly into their productivity workflows (Notion, Email).
 
+## Architecture
+
+![skratime](https://github.com/user-attachments/assets/e87f4dd2-a9c1-440a-babb-ce1a863dc258)
+
 ## 🚀 Key Features for Hackathon Pitch
 
 ### 🧠 Generative AI Analyst (Powered by Gemini 1.5 Flash)
